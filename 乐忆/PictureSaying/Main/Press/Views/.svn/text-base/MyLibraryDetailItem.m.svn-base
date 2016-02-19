@@ -1,0 +1,80 @@
+//
+//  MyLibraryDetailItem.m
+//  PictureSaying
+//
+//  Created by tutu on 14/12/30.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "MyLibraryDetailItem.h"
+#import "UIImageView+WebCache.h"
+#import "PSConfigs.h"
+
+@implementation MyLibraryDetailItem
+-(instancetype)initWithFrame:(CGRect)frame{
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self _initViews];
+        self.layer.cornerRadius = 3;
+        self.layer.masksToBounds = YES;
+   }
+    return self;
+}
+
+-(void)_initViews{
+    //    _isCheck = YES;
+    BIGiv = [[UIImageView alloc] initWithFrame:CGRectZero];
+    BIGiv.clipsToBounds = YES;
+    BIGiv.layer.cornerRadius = 3;
+//    BIGiv.layer.masksToBounds = YES;
+//    BIGiv.layer.borderWidth = 1;
+//    BIGiv.layer.borderColor = [UIColor colorWithRed:1.000 green:0.662 blue:0.086 alpha:0.670].CGColor;
+    BIGiv.contentMode = UIViewContentModeScaleAspectFill;
+    [self.contentView addSubview:BIGiv];
+    
+    smaooo = [[UIImageView alloc] initWithFrame:CGRectZero];
+    smaooo.clipsToBounds = YES;
+    smaooo.contentMode = UIViewContentModeScaleAspectFill;
+    [self.contentView addSubview:smaooo];
+}
+
+-(void)awakeFromNib{
+    [super awakeFromNib];
+}
+
+-(void)setPath:(NSString *)path{
+    if (_path != path) {
+        _path = path;
+        [self setNeedsLayout];
+    }
+}
+
+-(void)setIsCheck:(BOOL)isCheck{
+    _isCheck = isCheck;
+    [self setNeedsLayout];
+}
+
+-(void)layoutSubviews{
+    [super layoutSubviews];
+    BIGiv.frame = CGRectMake(0, 0, CGRectGetHeight(self.frame), CGRectGetHeight(self.frame));
+    BIGiv.image = [UIImage imageNamed:@"noDataShow.png"];
+
+    NSString *str = _path;
+    NSLog(@"%@",str);
+    if ([str rangeOfString:@"http:"].location != NSNotFound) {
+        NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:str];
+        urlHaha = [NSMutableString stringWithString:[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha]];
+        urlHaha = [NSMutableString stringWithString:[urlHaha stringByAppendingString:@"_compression_180_180.jpeg"]];
+        NSLog(@"%@",urlHaha);
+//        [BIGiv sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+        [BIGiv sd_setImageWithURL:[NSURL URLWithString:urlHaha] placeholderImage:[UIImage imageNamed:@"noDataShow.png"]];
+    }else{
+        BIGiv.image = [UIImage imageNamed:@"noDataShow.png"];
+    }
+//    [BIGiv setImageWithURL:[NSURL URLWithString:str]];
+//    [BIGiv sd_setImageWithURL:[NSURL URLWithString:str]];
+    smaooo.frame = CGRectMake(CGRectGetHeight(self.frame)-20, CGRectGetHeight(self.frame)-20, 20, 20);
+    smaooo.image = [UIImage imageNamed:@"xuanze"];
+    smaooo.hidden = _isCheck;
+}
+@end

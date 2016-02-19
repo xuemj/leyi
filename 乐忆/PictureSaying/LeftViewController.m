@@ -1,0 +1,275 @@
+//
+//  LeftViewController.m
+//  PictureSaying
+//
+//  Created by tutu on 14/12/4.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "LeftViewController.h"
+#import "BaseNaviagtionViewController.h"
+#import "FLSheZHiViewController.h"
+#import "MyFamilyViewController.h"
+#import "UIImageView+WebCache.h"
+#import "UIKit+AFNetworking.h"
+#import "MobClick.h"
+@interface LeftViewController ()
+{
+    MBProgressHUD *_hud;
+}
+@end
+
+@implementation LeftViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    self.view.backgroundColor = rgb(51, 51, 51, 1);
+    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(receiveNotification:) name:@"NameAndImage" object:nil];
+    [self _initViews];
+    
+}
+
+-(void)receiveNotification:(NSNotification *)note{
+    NSDictionary *dic = (NSDictionary *)[note object];
+    userButton.image = [dic objectForKey:@"image"];
+    usernameLabel.text = [dic objectForKey:@"name"];
+}
+
+- (void)dealloc
+{
+    [[NSNotificationCenter defaultCenter]removeObserver:self name:@"NameAndImage" object:nil];
+}
+
+-(void)_initViews{
+    
+    userButton = [[UIImageView alloc]init];
+    userButton.frame = CGRectMake((240-75)/2, 50, KScreenWidth*0.25, KScreenWidth*0.25);
+    userButton.clipsToBounds = YES;
+    userButton.backgroundColor = [UIColor clearColor];
+    userButton.layer.cornerRadius = KScreenWidth*0.125;
+    userButton.layer.masksToBounds = YES;
+    userButton.userInteractionEnabled = YES;
+//    [userButton setImage:[UIImage imageNamed:@"gerenzhxintouxing.png"] forState:UIControlStateNormal];
+//    [userButton addTarget:self action:@selector(alterAction:) forControlEvents:UIControlEventTouchUpInside];
+    userButton.image = [UIImage imageNamed:@"gerenzhxintouxing.png"];
+    UITapGestureRecognizer * tapGr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)];
+    [userButton addGestureRecognizer:tapGr];
+    [self.view addSubview:userButton];
+    
+    usernameLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, userButton.bottom+10, 200, 20)];
+    usernameLabel.font = [UIFont systemFontOfSize:15.0];
+    usernameLabel.textColor = rgb(225, 225, 225, 1);
+    usernameLabel.textAlignment = 1;
+    [self.view addSubview:usernameLabel];
+    
+    
+    NSData *tempUserData = [[NSUserDefaults standardUserDefaults] objectForKey:@"MyUserInfo"];
+    if (tempUserData!= nil) {
+        NSDictionary *tempDic = [NSJSONSerialization JSONObjectWithData:tempUserData options:NSJSONReadingMutableContainers error:nil];
+        if ([[tempDic objectForKey:@"nickname"] length]>0) {
+            usernameLabel.textColor = rgb(225, 225, 225, 1);
+            usernameLabel.text = [tempDic objectForKey:@"nickname"];
+        }else{
+            usernameLabel.textColor = rgb(186, 186, 186, 1);
+            usernameLabel.text = @"起个名字吧~";
+        }
+        if ([[tempDic objectForKey:@"image"] length]>0) {
+            [userButton sd_setImageWithURL:[NSURL URLWithString:[tempDic objectForKey:@"image"]]];
+            userAva = [tempDic objectForKey:@"image"];
+            
+        }else{
+            userButton.image = [UIImage imageNamed:@"gerenzhxintouxing"];
+            userAva = @"gerenzhxintouxing";
+        }
+
+    }else{
+        usernameLabel.textColor = rgb(186, 186, 186, 1);
+        usernameLabel.text = @"起个名字吧~";
+      userButton.image = [UIImage imageNamed:@"gerenzhxintouxing"];
+        userAva = @"gerenzhxintouxing";
+    }
+    
+    [self addLineWithWidth:0 withHeight:usernameLabel.bottom+40 toView:self.view];
+    
+    UIButton *myfriendsButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    myfriendsButton.frame = CGRectMake(0, usernameLabel.bottom+41, 240, 59);
+    myfriendsButton.backgroundColor = [UIColor clearColor];
+    [myfriendsButton addTarget:self action:@selector(myfriendsAction:) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:myfriendsButton];
+    
+    UIImageView *myfriendsIV = [[UIImageView alloc] initWithFrame:CGRectMake(20, 17, 25, 25)];
+    myfriendsIV.image = [UIImage imageNamed:@"gerenzhxintubiao1.png"];
+    [myfriendsButton addSubview:myfriendsIV];
+    
+    UILabel *myfriendsLabel = [[UILabel alloc] initWithFrame:CGRectMake(myfriendsIV.right+20, 17, 150, 25)];
+    myfriendsLabel.textColor = rgb(225, 225, 225, 1);
+    myfriendsLabel.text = @"我的家人";
+    [myfriendsButton addSubview:myfriendsLabel];
+    
+    [self addLineWithWidth:0 withHeight:myfriendsButton.bottom toView:self.view];
+    
+//    UIButton *addFriendButton = [UIButton buttonWithType:UIButtonTypeCustom];
+//    addFriendButton.frame = CGRectMake(0, myfriendsButton.bottom+1, 240, 59);
+//    addFriendButton.backgroundColor = [UIColor clearColor];
+//    [addFriendButton addTarget:self action:@selector(addAction:) forControlEvents:UIControlEventTouchUpInside];
+//    [self.view addSubview:addFriendButton];
+//    
+//    UIImageView *addIV = [[UIImageView alloc] initWithFrame:CGRectMake(20, 17, 25, 25)];
+//    addIV.image = [UIImage imageNamed:@"1"];
+//    [addFriendButton addSubview:addIV];
+//    
+//    UILabel *addLabel = [[UILabel alloc] initWithFrame:CGRectMake(addIV.right+20, 17, 150, 25)];
+//    addLabel.textColor = rgb(225, 225, 225, 1);
+//    addLabel.text = @"添加好友";
+//    [addFriendButton addSubview:addLabel];
+//    
+//    [self addLineWithWidth:0 withHeight:addFriendButton.bottom toView:self.view];
+    
+    UIButton *settingButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    settingButton.frame = CGRectMake(0, myfriendsButton.bottom+1, 240, 59);
+    settingButton.backgroundColor = [UIColor clearColor];
+    [settingButton addTarget:self action:@selector(settingAction:) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:settingButton];
+    
+    UIImageView *settingIV = [[UIImageView alloc] initWithFrame:CGRectMake(20, 17, 25, 25)];
+    settingIV.image = [UIImage imageNamed:@"gerenzhxintubiao2.png"];
+    [settingButton addSubview:settingIV];
+    
+    UILabel *settingLabel = [[UILabel alloc] initWithFrame:CGRectMake(myfriendsIV.right+20, 17, 150, 25)];
+    settingLabel.textColor = rgb(225, 225, 225, 1);
+    settingLabel.text = @"设置";
+    [settingButton addSubview:settingLabel];
+    
+    [self addLineWithWidth:0 withHeight:settingButton.bottom toView:self.view];
+    
+}
+-(void)tap:(UITapGestureRecognizer*)tap
+{
+    flbianji = [[FLbianjiViewController alloc] init];
+    flbianji.ig = userButton.image;
+    flbianji.userAva = userAva;
+    flbianji.userName = usernameLabel.text;
+    BaseNaviagtionViewController *nav = [[BaseNaviagtionViewController alloc] initWithRootViewController:flbianji];
+    //    [self.navigationController pushViewController:flbianji animated:YES];
+    [self presentViewController:nav animated:YES completion:^{
+        
+    }];
+
+}
+
+-(void)addLineWithWidth:(CGFloat)wid withHeight:(CGFloat)hei toView:(UIView *)parentView{
+    UIImageView *lineIV = [[UIImageView alloc] initWithFrame:CGRectMake(wid, hei, 240-wid, 0.5)];
+    lineIV.backgroundColor = [UIColor colorWithRed:72/255.0 green:72/255.0 blue:72/255.0 alpha:1];
+    [parentView addSubview:lineIV];
+}
+
+//-(void)alterAction:(UIButton *)btn{
+//   
+//}
+
+-(void)viewWillDisappear:(BOOL)animated{
+    [super viewWillDisappear:YES];
+}
+
+-(void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+//    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+//    BOOL changeUserInfo = [defaults boolForKey:@"changeUserInfo"];
+//    if (changeUserInfo == 1) {
+//        usernameLabel.text = [defaults objectForKey:@"userName"];
+//        NSString *sanbox = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"];
+//        NSString *filePath = [sanbox stringByAppendingPathComponent:@"userAva.jpg"];
+//        UIImage *userAva1 = [UIImage imageWithData:[[NSData alloc] initWithContentsOfFile:filePath]];
+//        [userButton setImage:userAva1 forState:UIControlStateNormal];
+//    }
+}
+
+-(void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+}
+
+-(void)addAction:(UIButton *)btn{
+
+}
+
+-(void)myfriendsAction:(UIButton *)btn{
+//    [self showHud:@"正在加载家人列表"];
+    
+    MyFamilyViewController *myFamily = [[MyFamilyViewController alloc] init];
+    myFamily.isInvite = @"no";
+    BaseNaviagtionViewController *nav = [[BaseNaviagtionViewController alloc] initWithRootViewController:myFamily];
+    [self presentViewController:nav animated:YES completion:^{
+//        [self hideHud];
+    }];
+    [MobClick event:@"qinren"];
+}
+
+//显示正在加载的hud
+-(void)showHud:(NSString *)title{
+    if (_hud == Nil) {
+        _hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    }
+    _hud.labelText = title;
+    _hud.dimBackground  =YES;
+}
+
+-(void)hideHud{
+    [_hud hide:YES];
+    _hud = nil;
+}
+
+- (MMDrawerController *)mmDrawViewController{
+    UIResponder *next = self.nextResponder;
+    do {
+        //判断响应者是否为MainViewController类型
+        if ([next isMemberOfClass:[MMDrawerController class]]) {
+            return (MMDrawerController *)next;
+        }
+        next = next.nextResponder;
+    } while (next != nil);
+    return nil;
+}
+
+//现实加载完成的hud
+-(void)completeHud:(NSString *)title{
+    _hud.customView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"37x-Checkmark.png"]];
+    _hud.mode = MBProgressHUDModeCustomView;
+    _hud.labelText = title;
+    [_hud hide:YES afterDelay:1];
+}
+
+-(void)settingAction:(UIButton *)btn{
+    FLSheZHiViewController *settingVC = [[FLSheZHiViewController alloc] init];
+    BaseNaviagtionViewController *nav = [[BaseNaviagtionViewController alloc] initWithRootViewController:settingVC];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self presentViewController:nav animated:YES completion:^{
+        
+        }];
+    });
+    [MobClick event:@"shezhi"];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+//    if (self.isViewLoaded && !self.view.window)// 是否是正在使用的视图
+//    {
+//        userButton = nil;
+//        usernameLabel = nil;
+//        self.view = nil;
+//    }
+    
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

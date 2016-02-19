@@ -1,0 +1,439 @@
+//
+//  AddFriendsViewController.m
+//  PictureSaying
+//
+//  Created by tutu on 14/12/30.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "AddFriendsViewController.h"
+#import "AddressBookViewController.h"
+#import <ShareSDK/ShareSDK.h>
+#define CONTENT NSLocalizedString(@"共享美好回忆!", @"乐忆不仅集成简单、支持如QQ好友、微信、新浪微博、腾讯微博等所有社交平台，而且还有强大的统计分析管理后台，实时了解用户、信息流、回流率、传播效应等数据，详情见官网http://wetime.cn @乐忆")
+@interface AddFriendsViewController ()<UITextFieldDelegate,addDelegate,UIAlertViewDelegate>
+
+@property(nonatomic,copy)NSString *s;
+@property(nonatomic,strong)UITextField *tf1;
+@property(nonatomic,strong)UITextField *tf2;
+@property(nonatomic,strong)NSArray *arr;
+@property(nonatomic,copy)NSString *si;
+@property(nonatomic,copy)NSString *sii;
+@end
+
+@implementation AddFriendsViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    //给个名字
+    self.s = @"起个名真难";
+    self.view.backgroundColor = [UIColor colorWithRed:240/255.0 green:240/255.0 blue:240/255.0 alpha:1];
+    self.title = @"添加亲人";
+    //初始化接受数组
+    self.arr = [NSArray array];
+    //返回好友列表
+    
+    //手机号
+    UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 20, KScreenWidth, KScreenHeight*0.1)];
+    [self.view addSubview:view];
+    view.backgroundColor = [UIColor whiteColor];
+    
+    self.tf1 = [[UITextField alloc]initWithFrame:CGRectMake(10,20,KScreenWidth, KScreenHeight*0.1)];
+    self.tf1.placeholder = @"他/她的手机号";
+    self.tf1.backgroundColor = [UIColor whiteColor];
+    self.tf1.keyboardType = UIKeyboardTypeNumberPad;
+    self.tf1.returnKeyType = UIReturnKeyDone;
+    self.tf1.delegate = self;
+    [self.tf1 addTarget:self action:@selector(textFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
+    [self.view addSubview:self.tf1];
+    self.tf1.text = _tapFriendInfoDic[kFriendUsn];
+    
+    UIView *view1 = [[UIView alloc] initWithFrame:CGRectMake(0,self.tf1.bottom+1,KScreenWidth, KScreenHeight*0.1)];
+    [self.view addSubview:view1];
+    view1.backgroundColor = [UIColor whiteColor];
+    //称呼
+    self.tf2 = [[UITextField alloc]initWithFrame:CGRectMake(10,self.tf1.bottom+1,KScreenWidth, KScreenHeight*0.1)];
+    self.tf2.placeholder = @"他/她的称呼";
+    self.tf2.backgroundColor = [UIColor whiteColor];
+    self.tf2.returnKeyType = UIReturnKeyDone;
+    self.tf2.delegate = self;
+    [self.view addSubview:self.tf2];
+    self.tf2.text = _tapFriendInfoDic[kFriendRemark];
+    
+    //我的View
+    UIView *v = [[UIView alloc]initWithFrame:CGRectMake(0,self.tf2.bottom+1 ,KScreenWidth,KScreenHeight*0.1)];
+    v.backgroundColor = [UIColor whiteColor];
+    [self.view addSubview:v];
+   //取本地昵称
+    NSData *tempUserData = [[NSUserDefaults standardUserDefaults] objectForKey:@"MyUserInfo"];
+    NSDictionary *tempDic = [NSJSONSerialization JSONObjectWithData:tempUserData options:NSJSONReadingMutableContainers error:nil];
+    self.s = [tempDic objectForKey:@"nickname"];
+    //我的名字
+    
+    UILabel *la = [[UILabel alloc] initWithFrame:CGRectMake(10, v.frame.size.height/4, KScreenWidth*0.2, v.frame.size.height*0.5)];
+    la.text = @"我是";
+    [v addSubview:la];
+    
+    UILabel *laName = [[UILabel alloc]initWithFrame:CGRectMake(10+la.right, v.frame.size.height/4, KScreenWidth-20, v.frame.size.height*0.5)];
+    laName.text = self.s;
+    laName.textColor = CommonBlue;
+    [v addSubview:laName];
+    //确定按钮
+    UIButton *b = [UIButton buttonWithType:UIButtonTypeCustom];
+    b.frame = CGRectMake(10,v.bottom+10, KScreenWidth-20, KScreenHeight*0.1);
+    b.backgroundColor = CommonBlue;
+    [b setTitle:@"确定" forState:UIControlStateNormal];
+    [b setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [b addTarget:self action:@selector(click:) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:b];
+   
+    //通讯录添加
+    UIView *v2= [[UIView alloc]initWithFrame:CGRectMake(10, b.bottom+10, KScreenWidth-20, KScreenHeight*0.1)];
+    v2.backgroundColor = [UIColor whiteColor];
+    [self.view addSubview:v2];
+    //1.  创建手势对象
+    UITapGestureRecognizer *tapGR = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tap:)];
+    [v2 addGestureRecognizer:tapGR];
+    //通讯录图标
+    UIImageView *iv = [[UIImageView alloc]initWithFrame:CGRectMake(10,v2.frame.size.height/4,v2.frame.size.height*0.5 , v2.frame.size.height*0.5)];
+    iv.image = [UIImage imageNamed:@"addressBook"];
+    [v2 addSubview:iv];
+    //通讯录
+    UILabel *l = [[UILabel alloc]initWithFrame:CGRectMake(iv.right+10, v2.frame.size.height/3, KScreenWidth*0.5,v2.frame.size.height*0.3)];
+    l.text = @"添加通讯录好友";
+    [v2 addSubview:l];
+    //箭头
+    UIImageView *iv2 = [[UIImageView alloc]initWithFrame:CGRectMake(l.right+60,v2.frame.size.height/3,v2.frame.size.height/3, v2.frame.size.height/3)];
+    iv2.image = [UIImage imageNamed:@"c1"];
+    [v2 addSubview:iv2];
+    
+    //微信好友添加
+    UIView *WeiXin= [[UIView alloc]initWithFrame:CGRectMake(10, v2.bottom+10, KScreenWidth-20, KScreenHeight*0.1)];
+    WeiXin.backgroundColor = [UIColor whiteColor];
+    [self.view addSubview:WeiXin];
+    //1.  创建手势对象
+    UITapGestureRecognizer *tapGR1 = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tapweixin:)];
+    [WeiXin addGestureRecognizer:tapGR1];
+    //微信图标
+    UIImageView *ivWeiXin = [[UIImageView alloc]initWithFrame:CGRectMake(10,WeiXin.frame.size.height/4,WeiXin.frame.size.height*0.5 , WeiXin.frame.size.height*0.5)];
+    ivWeiXin.image = [UIImage imageNamed:@"weixinAdd"];
+    [WeiXin addSubview:ivWeiXin];
+    //微信
+    UILabel *lWeiXin = [[UILabel alloc]initWithFrame:CGRectMake(ivWeiXin.right+10, WeiXin.frame.size.height/3, KScreenWidth*0.5,WeiXin.frame.size.height*0.3)];
+    lWeiXin.text = @"添加微信好友";
+    [WeiXin addSubview:lWeiXin];
+    //箭头
+    UIImageView *iv3= [[UIImageView alloc]initWithFrame:CGRectMake(lWeiXin.right+60,WeiXin.frame.size.height/3,WeiXin.frame.size.height/3, WeiXin.frame.size.height/3)];
+    iv3.image = [UIImage imageNamed:@"c1"];
+    [WeiXin addSubview:iv3];
+   
+    //QQ添加
+    UIView *QQ= [[UIView alloc]initWithFrame:CGRectMake(10, WeiXin.bottom+10, KScreenWidth-20, KScreenHeight*0.1)];
+    QQ.backgroundColor = [UIColor whiteColor];
+    [self.view addSubview:QQ];
+    //1.  创建手势对象
+    UITapGestureRecognizer *tapGR2 = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tapqq:)];
+   [QQ addGestureRecognizer:tapGR2];
+    //qq图标
+    UIImageView *ivQQ = [[UIImageView alloc]initWithFrame:CGRectMake(10,QQ.frame.size.height/4,QQ.frame.size.height*0.5 , QQ.frame.size.height*0.5)];
+    ivQQ.image = [UIImage imageNamed:@"qqAdd"];
+    [QQ addSubview:ivQQ];
+    //qq
+    UILabel *lqq = [[UILabel alloc]initWithFrame:CGRectMake(ivQQ.right+10, QQ.frame.size.height/3, KScreenWidth*0.5,QQ.frame.size.height*0.3)];
+    lqq.text = @"添加QQ好友";
+    [QQ addSubview:lqq];
+    //箭头
+    UIImageView *iv4 = [[UIImageView alloc]initWithFrame:CGRectMake(lqq.right+60,QQ.frame.size.height/3,QQ.frame.size.height/3, QQ.frame.size.height/3)];
+    iv4.image = [UIImage imageNamed:@"c1"];
+    [QQ addSubview:iv4];
+    
+
+    
+}
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+    [self.tf1 resignFirstResponder];
+    [self.tf2 resignFirstResponder];
+    return YES;
+}
+
+-(void)tap:(UITapGestureRecognizer *)gr
+{
+    
+    AddressBookViewController *addressBookVC = [[AddressBookViewController alloc] init];
+    addressBookVC.delegate = self;
+    [self.navigationController pushViewController:addressBookVC animated:YES];
+    
+    
+}
+-(void)tapweixin:(UITapGestureRecognizer *)gr1
+{
+    NSString *sanbox = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"];
+    NSString *filePath = [sanbox stringByAppendingPathComponent:@"app.jpg"];
+
+   //构造分享内容
+    id<ISSContent> publishContent = [ShareSDK content:CONTENT
+                                       defaultContent:@""
+                                                image:[ShareSDK imageWithPath:filePath]
+                                                title:@"乐忆!"
+                                                  url:@"http://www.wetime.cn"
+                                          description:NSLocalizedString(@"乐忆", @"乐忆")
+                                            mediaType:SSPublishContentMediaTypeNews];
+    
+    //以下信息为特定平台需要定义分享内容，如果不需要可省略下面的添加方法
+    
+    //定制微信好友信息
+    [publishContent addWeixinSessionUnitWithType:INHERIT_VALUE
+                                         content:INHERIT_VALUE
+                                           title:@"乐忆"
+                                             url:INHERIT_VALUE
+                                           image:INHERIT_VALUE
+                                    musicFileUrl:nil
+                                         extInfo:nil
+     
+                                        fileData:nil
+                                    emoticonData:nil];
+    
+    //结束定制信息
+    
+    [ShareSDK clientShareContent:publishContent
+                            type:ShareTypeWeixiSession
+                   statusBarTips:YES
+                          result:^(ShareType type, SSResponseState state, id<ISSPlatformShareInfo> statusInfo, id<ICMErrorInfo> error, BOOL end) {
+                              
+                              if (state == SSPublishContentStateSuccess)
+                              {
+                                  
+                              }
+                              else if (state == SSPublishContentStateFail)
+                              {
+                                  
+                              }
+                          }];
+}
+
+-(void)tapqq:(UITapGestureRecognizer *)gr2
+{
+
+    NSString *sanbox = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"];
+    NSString *filePath = [sanbox stringByAppendingPathComponent:@"app.jpg"];
+    //构造分享内容
+    id<ISSContent> publishContent = [ShareSDK content:CONTENT
+                                       defaultContent:@""
+                                                image:[ShareSDK imageWithPath:filePath]
+                                                title:@"乐忆!"
+                                                  url:@"http://www.wetime.cn"
+                                          description:NSLocalizedString(@"乐忆", @"乐忆")
+                                            mediaType:SSPublishContentMediaTypeNews];
+    
+    //以下信息为特定平台需要定义分享内容，如果不需要可省略下面的添加方法
+    
+    //定制QQ分享信息
+    [publishContent addQQUnitWithType:INHERIT_VALUE
+                              content:INHERIT_VALUE
+                                title:@"乐忆!"
+                                  url:INHERIT_VALUE
+                                image:INHERIT_VALUE];
+    
+    
+    //        //结束定制信息
+    //        ////////////////////////
+    
+    [ShareSDK clientShareContent:publishContent
+                            type:ShareTypeQQ
+                   statusBarTips:YES
+                          result:^(ShareType type, SSResponseState state, id<ISSPlatformShareInfo> statusInfo, id<ICMErrorInfo> error, BOOL end) {
+                              
+                              if (state == SSPublishContentStateSuccess)
+                              {
+                                  
+                              }
+                              else if (state == SSPublishContentStateFail)
+                              {
+                                  
+                              }
+                          }];
+    
+    
+}
+-(void)sendToFirstView1:(NSString*)sPhone
+{
+    self.tf1.text = sPhone;
+}
+-(void)sendToFirstView2:(NSString*)sName
+{
+    self.tf2.text = sName;
+}
+- (void)textFieldDidChange:(UITextField *)textField
+{
+    if (textField == self.tf1) {
+        if (textField.text.length > 11) {
+            textField.text = [textField.text substringToIndex:11];
+        }
+    }
+}
+-(BOOL)isValidateMobile:(NSString *)mobile
+{
+    NSString * phoneRegex = @"^1(3[0-9]|5[0-9]|8[0-9]|4[0-9]|7[0-9])\\d{8}$";
+    NSPredicate *phoneTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",phoneRegex];
+    return [phoneTest evaluateWithObject:mobile];
+}
+
+-(void)click:(UIButton*)sender
+{
+    if (![self isValidateMobile:[self.tf1 text]]) {
+        UIAlertView *alt = [[UIAlertView alloc]initWithTitle:@"提示" message:@"请输入正确的手机号码" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:nil];
+        [alt show];
+    }else{
+        [self.tf1 resignFirstResponder];
+        [self.tf2 resignFirstResponder];
+        [self showHud:@"正在验证用户信息..."];
+        NSString *urlstring1 =[NSString stringWithFormat:@"/WeiXiao/api/v1/user/public/getUserByNumber/%@",self.tf1.text] ;
+        [DataService requestWithURL:urlstring1 params:nil httpMethod:@"GET" block1:^(id result) {
+            NSDictionary *dic = (NSDictionary *)result;
+            if (dic.allKeys.count == 0) {
+                [self sendInviteCode];
+            }else{
+                [self addFriendRequest:dic];
+            }
+        } failLoad:^(id result) {
+            
+        }];
+  
+    }
+
+}
+
+-(void)addFriendRequest:(NSDictionary *)dic{
+        NSData *tempUserData = [[NSUserDefaults standardUserDefaults] objectForKey:@"MyUserInfo"];
+        NSDictionary *tempDic = [NSJSONSerialization JSONObjectWithData:tempUserData options:NSJSONReadingMutableContainers error:nil];
+        NSString *ss = [NSString stringWithFormat:@"/WeiXiao/api/v1/user/addressBook/%@",((_tapFriendInfoDic!=nil)?@"edit":@"add")];
+        NSMutableDictionary *df = [NSMutableDictionary dictionary];
+        [df setObject:[tempDic objectForKey:@"id"] forKey:@"userId"];
+        [df setObject:[tempDic objectForKey:@"usn"] forKey:@"usn"];
+        [df setObject:@0 forKey:@"source"];
+        [df setObject:@0 forKey:@"status"];
+        [df setObject:[dic objectForKey:@"id"] forKey:@"friendId"];
+        [df setObject:self.tf1.text forKey:@"friendUsn"];
+        [df setObject:@0 forKey:@"friendSource"];
+        [df setObject:self.tf2.text forKey:@"friendRemark"];
+        [df setObject:[NSNumber numberWithInteger:self.addCount] forKey:@"groupName"];
+    if (_tapFriendInfoDic!=nil)
+    {
+        [df setObject:_tapFriendInfoDic[kId] forKey:kId];
+    }
+        [DataService requestWithURL:ss params:df requestHeader:nil httpMethod:@"POST" block:^(NSObject *result) {
+    
+            
+            if (_tapFriendInfoDic!=nil)
+            {
+                self.userInfoDic = [NSMutableDictionary dictionaryWithDictionary:df];
+            }
+            else
+            {
+                self.userInfoDic = [NSMutableDictionary dictionaryWithDictionary:(NSDictionary *)result];
+            }
+            
+            if (result == nil) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self hideHud];
+                    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"提示" message:@"该用户已经是您的好友了" delegate:nil cancelButtonTitle:@"知道了" otherButtonTitles:nil, nil];
+                    [alert show];
+                });
+            }else{
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self hideHud];
+                    friendInfo = (NSDictionary *)result;
+                    addFriend = @"yes";
+                    UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"添加成功,快去看看吧" message:nil delegate:self cancelButtonTitle:@"确定" otherButtonTitles: nil];
+                    alert.tag = 200;
+                    [alert show];
+                });
+            }
+        } failLoad:^(id result) {
+            
+        }];
+    
+
+    
+}
+
+-(void)sendInviteCode{
+    [self hideHud];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"提示" message:@"该手机号还没有注册乐忆..." delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"邀请TA",nil];
+        alert.tag = 300;
+        [alert show];
+    });
+}
+
+-(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
+    if (alertView.tag == 200) {
+
+        [self.delegate sendTocount:self.addCount];
+//        [self.delegate sendToid:self.sii];
+        [self.delegate refreshUserInfoWithDictionary:self.userInfoDic withReplaceDictionary:_tapFriendInfoDic];
+        [self.navigationController popViewControllerAnimated:YES];
+    }else if (alertView.tag == 300){
+        if (buttonIndex == 0) {
+            
+        }else{
+            NSData *tempUserData = [[NSUserDefaults standardUserDefaults] objectForKey:@"MyUserInfo"];
+            NSDictionary *tempDic = [NSJSONSerialization JSONObjectWithData:tempUserData options:NSJSONReadingMutableContainers error:nil];
+            //发送短信
+            NSString *str = [NSString stringWithFormat:@"/WeiXiaoVCK/api/v1/ivc/sms/%@/%@",[tempDic objectForKey:@"usn"],self.tf1.text];
+            [DataService requestWithURL:str params:nil httpMethod:@"GET" block1:^(id result) {
+                NSDictionary *dic = (NSDictionary *)result;
+                if ([[dic objectForKey:@"result"] isEqual:@0]) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"邀请好友" message:@"邀请已发出" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles: nil];
+                        [alert show];
+                    });
+                }
+            } failLoad:^(id result) {
+                
+            }];
+        }
+    }
+}
+
+-(void)back:(UIButton*)sender
+{
+    if ([addFriend isEqualToString:@"yes"]) {
+        self.sii = [friendInfo objectForKey:@"id"];
+        if (self.tf2.text.length>0) {
+            [self.delegate sendToname:self.tf2.text];
+        }else{
+            [self.delegate sendToname:[friendInfo objectForKey:@"nickname"]];
+        }
+        [self.delegate sendToimage:@"0"];
+        [self.delegate sendTocount:self.addCount];
+        [self.delegate sendToid:self.sii];
+    }
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+-(void)showHud:(NSString *)title{
+    if (_hud == Nil) {
+        _hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    }
+    _hud.labelText = title;
+    _hud.dimBackground  =YES;
+}
+
+-(void)hideHud{
+    [_hud hide:YES];
+    _hud = nil;
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    if (self.isViewLoaded && !self.view.window)// 是否是正在使用的视图
+    {
+        // Add code to preserve data stored in the views that might be
+        // needed later.
+        // Add code to clean up other strong references to the view in
+        // the view hierarchy.
+        self.view = nil;// 目的是再次进入时能够重新加载调用viewDidLoad函数
+    }
+}
+@end

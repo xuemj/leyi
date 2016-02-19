@@ -1,0 +1,843 @@
+
+//
+//  IndexViewController.m
+//  PictureSaying
+//
+//  Created by tutu on 14/12/3.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "IndexViewController.h"
+#import "IndexTableViewCell.h"
+#import "IndexModel.h"
+#import "CreateViewController.h"
+#import "DiscoveryViewController.h"
+#import "CreateStoryViewController.h"
+
+@interface IndexViewController ()<BaseTableViewDelegate>
+{
+    NSTimer *timer1;
+    NSTimer *timer2;
+    //NSMutableArray *arrPublish;
+}
+@property (strong, nonatomic) UIImagePickerController *imagePicker;
+@end
+
+@implementation IndexViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    
+    self.view.backgroundColor = rgb(240, 240, 240, 1);
+    self.title = @"我的故事";
+    
+    //初始化数组
+    //arrPublish = [NSMutableArray array];
+    self.data = [NSMutableArray array];
+    self.data1 = [NSMutableArray array];
+    self.friendData = [NSMutableArray array];
+    self.mineData = [NSMutableArray array];
+    [self _createNavItem];
+    [self _initBehindTableView];
+    [self _initFrontTableView];
+    tipLabel = [[UILabel alloc] initWithFrame:CGRectMake((KScreenWidth-200)/2, KScreenHeight+50, 200, 30)];
+    tipLabel.backgroundColor = [UIColor blackColor];
+    tipLabel.textAlignment = 1;
+    tipLabel.font = [UIFont systemFontOfSize:16.0];
+    tipLabel.textColor = [UIColor whiteColor];
+    tipLabel.layer.cornerRadius = 5;
+    tipLabel.layer.masksToBounds = YES;
+    [self.view addSubview:tipLabel];
+    
+    finishTipLabel = [[UILabel alloc] initWithFrame:CGRectMake((KScreenWidth-200)/2, KScreenHeight+50, 200, 30)];
+    finishTipLabel.backgroundColor = [UIColor blackColor];
+    finishTipLabel.textAlignment = 1;
+    finishTipLabel.font = [UIFont systemFontOfSize:16.0];
+    finishTipLabel.textColor = [UIColor whiteColor];
+    finishTipLabel.layer.cornerRadius = 5;
+    finishTipLabel.layer.masksToBounds = YES;
+    [self.view addSubview:finishTipLabel];
+    
+    [self showHud:@"精彩马上开始..."];
+//    [self _initTabBar];
+//    [self _requestData];
+ //   NSLog(@"%@",self.view.subviews);
+
+//    UIImage *image = [UIImage imageNamed:@"test.jpg"];
+//    
+//    NSData *data1 =  UIImageJPEGRepresentation(image, 0.1);
+//    NSMutableDictionary *nd = [NSMutableDictionary dictionary];
+//    [nd setObject:data1 forKey:@"path1"];
+//    [nd setObject:@15903673348 forKey:@"accountUsn"];
+//    [nd setObject:@"卖烧饼" forKey:@"txt1"];
+//    [nd setObject:@"2" forKey:@"time1"];
+//    
+//    NSLog(@"%@",nd);
+    //NSMutableData *finishData = [[NSMutableData alloc]init];
+    //    NSKeyedArchiver *archiver = [[NSKeyedArchiver alloc]initForWritingWithMutableData:finishData];
+    //    [archiver encodeObject:nd forKey:@"data"];
+    //    [archiver finishEncoding];
+    // NSLog(@"++++++++++++++++++-------------------%@",archiver);
+//    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http://192.168.1.131:8080/WeiXiaoAlbum/api/v1/album/%@/photof",s]];
+//    
+//    NSLog(@"%@",url);
+//    [DataService requestWithURL:@"/WeiXiaoAlbum/api/v1/album/548fd6bd5ba87eb3a35de473/photof" params:nd httpMethod:@"POST" block1:^(id result) {
+//        NSLog(@"%@",result);
+//    }];
+}
+
+
+#pragma mark - RequestData And InitViews
+-(void)_requestData{
+    NSMutableDictionary *params1 = [NSMutableDictionary dictionary];
+    [self showHud:@"精彩马上开始..."];
+    [DataService requestWithURL:@"/WeiXiao/api/v1/story/userView/1/0/15" params:params1 httpMethod:@"GET" block1:^(id result) {
+        NSLog(@"朋友分享给我的:%@",result);
+        NSArray *array = (NSArray *)result;
+        for (int i = 0;i<array.count;i++) {
+            NSDictionary *dic = array[i];
+            IndexModel *model = [[IndexModel alloc] initContentWithDic:dic];
+            NSString *isodd = i%2 == 0?@"1":@"0";
+            model.isOdd = isodd;
+            if ([dic objectForKey:@"templateId"]) {
+                model.templateId = @"1";
+            }else{
+                model.templateId = [dic objectForKey:@"templateId"];
+            }
+            model.descrip = [dic objectForKey:@"description"];
+            [self.friendData addObject:model];
+        }
+        NSLog(@"sdfghygtfds%@",self.friendData);
+        [self hideHud];
+        _tableView.indexData = _friendData;
+        [_tableView reloadData];
+        if (_friendData.count<15) {
+            _tableView->_refreshFooter.enabled = NO;
+            _tableView->upLoading = YES;
+            _tableView->_refreshFooter.hidden = YES;
+            [_tableView->_refreshFooter setTitle:@"加载完成" forState:UIControlStateNormal];
+        }else{
+            _tableView->_refreshFooter.enabled = YES;
+            _tableView->upLoading = NO;
+            _tableView->_refreshFooter.hidden = NO;
+            [_tableView->_refreshFooter setTitle:@"上拉(点击)加载更多" forState:UIControlStateNormal];
+        }
+        NSArray *keys = @[@"tableView",@"array"];
+        NSArray *values = @[_tableView,self.friendData];
+        NSDictionary *argDic = [NSDictionary dictionaryWithObjects:values forKeys:keys];
+        [self performSelectorInBackground:@selector(requestZanAndComment:) withObject:argDic];
+    } failLoad:^(id result) {
+        
+    }];
+    
+    NSMutableDictionary *params2 = [NSMutableDictionary dictionary];
+    [DataService requestWithURL:@"/WeiXiao/api/v1/story/list/15236985745/0/15" params:params2 httpMethod:@"GET" block1:^(id result) {
+        NSLog(@"我的故事:%@",result);
+        NSArray *array = (NSArray *)result;
+        for (int i = 0;i<array.count;i++) {
+            NSDictionary *dic = array[i];
+            IndexModel *model = [[IndexModel alloc] initContentWithDic:dic];
+            NSString *isodd = i%2 == 0?@"1":@"0";
+            model.isOdd = isodd;
+            if ([dic objectForKey:@"templateId"]) {
+                model.templateId = @"1";
+            }else{
+                model.templateId = [dic objectForKey:@"templateId"];
+            }
+            model.descrip = [dic objectForKey:@"description"];
+            [self.mineData addObject:model];
+        }
+        NSLog(@"sdfghygtfds%@",self.mineData);
+        [self hideHud];
+        _tableView1.indexData = _friendData;
+        [_tableView1 reloadData];
+        if (_mineData.count<15) {
+            _tableView1->_refreshFooter.enabled = NO;
+            _tableView1->upLoading = YES;
+            _tableView1->_refreshFooter.hidden = YES;
+            [_tableView1->_refreshFooter setTitle:@"加载完成" forState:UIControlStateNormal];
+        }else{
+            _tableView1->_refreshFooter.enabled = YES;
+            _tableView1->upLoading = NO;
+            _tableView1->_refreshFooter.hidden = NO;
+            [_tableView1->_refreshFooter setTitle:@"上拉(点击)加载更多" forState:UIControlStateNormal];
+        }
+        NSArray *keys = @[@"tableView",@"array"];
+        NSArray *values = @[_tableView1,self.mineData];
+        NSDictionary *argDic = [NSDictionary dictionaryWithObjects:values forKeys:keys];
+        [self performSelectorInBackground:@selector(requestZanAndComment:) withObject:argDic];
+    } failLoad:^(id result) {
+        
+    }];
+}
+
+-(void)requestZanAndComment:(NSDictionary *)dic{
+    NSData *tempUserData = [[NSUserDefaults standardUserDefaults] objectForKey:@"MyUserInfo"];
+    NSDictionary *tempDic = [NSJSONSerialization JSONObjectWithData:tempUserData options:NSJSONReadingMutableContainers error:nil];
+    NSLog(@"UserInfo ---------- %@",tempDic);
+    NSMutableArray *arr = [dic objectForKey:@"array"];
+    IndexTableView *tableView = [dic objectForKey:@"tableView"];
+    NSLog(@"%d",arr.count);
+    for (int i = 0; i<arr.count; i++) {
+        IndexModel *model = arr[i];
+        NSString *urlstring1;
+        if (model.sid.length>0) {
+            urlstring1 = [NSString stringWithFormat:@"/WeiXiaoFavOrHat/api/v1/story/%@/fav/%@",model.sid,[tempDic objectForKey:@"usn"]];
+        }else{
+            urlstring1 = [NSString stringWithFormat:@"/WeiXiaoFavOrHat/api/v1/story/%@/fav/%@",model.storyId,[tempDic objectForKey:@"usn"]];
+        }
+        [DataService requestWithURL:urlstring1 params:nil httpMethod:@"GET" block1:^(id result) {
+            NSLog(@"是否点赞么么哒%@",result);
+            model.isZan = [[result objectForKey:@"value"] stringValue];
+            NSLog(@"%@",model.isZan);
+            tableView.data = arr;
+            [tableView reloadData];
+        } failLoad:^(id result) {
+            
+        }];
+        NSString *urlstring2;
+        if (model.sid.length>0) {
+            urlstring2 = [NSString stringWithFormat:@"/WeiXiaoComment/api/v1/story/%@/comment",model.sid];
+        }else{
+            urlstring2 = [NSString stringWithFormat:@"/WeiXiaoComment/api/v1/story/%@/comment",model.storyId];
+        }
+        [DataService requestWithURL:urlstring2 params:nil httpMethod:@"GET" block1:^(id result) {
+            NSLog(@"评论数么么哒%@",result);
+            model.commentCount = [[result objectForKey:@"value"] stringValue];
+            NSLog(@"%@",model.commentCount);
+            tableView.indexData = arr;
+            [tableView reloadData];
+        } failLoad:^(id result) {
+            
+        }];
+        NSString *urlstring3;
+        if (model.sid.length>0) {
+            urlstring3 = [NSString stringWithFormat:@"/WeiXiaoFavOrHat/api/v1/story/%@/fav/",model.sid];
+        }else{
+            urlstring3 = [NSString stringWithFormat:@"/WeiXiaoFavOrHat/api/v1/story/%@/fav/",model.storyId];
+        }
+        [DataService requestWithURL:urlstring3 params:nil httpMethod:@"GET" block1:^(id result) {
+            NSLog(@"点赞数么么哒%@",result);
+            if (![[result objectForKey:@"value"] isKindOfClass:[NSNull class]]) {
+                model.zanCount = [[result objectForKey:@"value"] stringValue];
+            }
+            NSLog(@"zanCount%@",model.zanCount);
+            tableView.indexData = arr;
+            [tableView reloadData];
+        } failLoad:^(id result) {
+            
+        }];
+    }
+    
+//    [self performSelector:@selector(reloadTableView) withObject:nil afterDelay:1.5];
+}
+
+-(void)_initTabBar{
+//    float y = ios7?KScreenHeight-49:KScreenHeight-49-20;
+    _tabBarImgView = [[UIImageView alloc] initWithFrame:CGRectMake(0, _tableView.bottom, KScreenWidth, 49)];
+    _tabBarImgView.backgroundColor = [UIColor whiteColor];
+    _tabBarImgView.userInteractionEnabled = YES;
+    _tabBarImgView.multipleTouchEnabled = YES;
+    _tabBarImgView.alpha = 0.88;
+    [self.view addSubview:_tabBarImgView];
+    
+//    int btnWidth = KScreenWidth/3;
+//    NSArray *btnImgNames = @[
+//                             @"tanchutubiao2.png",
+//                             @"tanchutubiao1.png",
+//                             @"广场点击前.png",
+//                             ];
+//    
+//    NSArray *selectImgNames = @[@"我的点击后.png",
+//                                @"jiahaobj.png",
+//                                @"广场点击后.png",
+//                                ];
+//    //    CGFloat awidth = KScreenWidth/btnImgNames.count;
+//    
+//    for (int i = 0; i<btnImgNames.count; i++) {
+//        NSString *imgName = [btnImgNames objectAtIndex:i];
+//        NSString *selectImageName = selectImgNames[i];
+//            UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+//            button.frame = CGRectMake(btnWidth * i+40, 4, 25, 40.6);
+//            [button setImage:[UIImage imageNamed:imgName] forState:UIControlStateNormal];
+//            [button setImage:[UIImage imageNamed:selectImageName] forState:UIControlStateSelected];
+//            button.tag = 100+i;
+//            button.showsTouchWhenHighlighted = YES;
+//            [button addTarget:self action:@selector(clickAction:) forControlEvents:UIControlEventTouchUpInside];
+//            [_tabBarImgView addSubview:button];
+//    }
+//    UIButton *btn = (UIButton *)[_tabBarImgView viewWithTag:100];
+//    btn.selected = YES;
+}
+
+-(void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+    if (self.friendData.count>0&&self.mineData.count>0) {
+        NSArray *keys = @[@"tableView",@"array"];
+        NSArray *values = @[_tableView1,self.mineData];
+        NSDictionary *argDic = [NSDictionary dictionaryWithObjects:values forKeys:keys];
+        NSArray *keys1 = @[@"tableView",@"array"];
+        NSArray *values1 = @[_tableView,self.friendData];
+        NSDictionary *argDic1 = [NSDictionary dictionaryWithObjects:values1 forKeys:keys1];
+        [self requestZanAndComment:argDic];
+        [self requestZanAndComment:argDic1];
+    }
+    
+    timer1 = [NSTimer scheduledTimerWithTimeInterval:60 target:self selector:@selector(_loadNewMineData) userInfo:nil repeats:YES];
+    timer2 = [NSTimer scheduledTimerWithTimeInterval:60 target:self selector:@selector(_loadNewFriendData) userInfo:nil repeats:YES];
+    [timer1 fire];
+    [timer2 fire];
+}
+
+-(void)viewDidDisappear:(BOOL)animated{
+    [super viewDidDisappear:animated];
+    if (timer1 != nil&&timer2 != nil) {
+        [timer1 invalidate];
+        [timer2 invalidate];
+    }
+}
+
+-(void)_initFrontTableView{
+    _tableView = [[IndexTableView alloc] initWithFrame:CGRectMake(0, 0, KScreenWidth, KScreenHeight-64-44-5)];
+    _tableView.tag = 101;
+    _tableView.backgroundColor = rgb(240, 240, 240, 1);
+    _tableView.refreshDelegate = self;
+    _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    _tableView.rowHeight = (KScreenHeight-64)/3;
+    [self.view addSubview:_tableView];
+}
+
+-(void)_initBehindTableView{
+    _tableView1 = [[IndexTableView alloc] initWithFrame:CGRectMake(0, 0, KScreenWidth, KScreenHeight-64-44-5)];
+    _tableView1.tag = 100;
+    _tableView1.backgroundColor = rgb(240, 240, 240, 1);
+    _tableView1.refreshDelegate = self;
+    [_tableView1 showLoadingView:NO];
+    _tableView1.separatorStyle = UITableViewCellSeparatorStyleNone;
+    _tableView1.rowHeight = (KScreenHeight-64)/3;
+    [self.view addSubview:_tableView1];
+//    [self.view insertSubview:_tableView1 belowSubview:_tableView];
+//    _tableView1.hidden = YES;
+    UIView *vvvv = [[UIView alloc] initWithFrame:CGRectMake(50, 50, 200, 30)];
+    vvvv.backgroundColor = rgb(100, 100, 100, 0.2);
+    [_tableView1 addSubview:vvvv];
+}
+
+-(void)_createNavItem{
+    UIView *switchView = [[UIView alloc] initWithFrame:CGRectMake(0, -10, KScreenWidth-200, 30)];
+    switchView.backgroundColor = [UIColor clearColor];
+    switchView.clipsToBounds = YES;
+    switchView.layer.borderWidth = 1.5;
+    switchView.layer.borderColor = [rgb(241, 184, 15, 1) CGColor];
+    switchView.layer.cornerRadius = 5;
+    self.navigationItem.titleView = switchView;
+    
+//    UIButton *friendButton = [UIButton buttonWithType:UIButtonTypeCustom];
+//    friendButton.frame = CGRectMake(0, 2, 55, 30);
+//    [friendButton setBackgroundImage:[UIImage imageNamed:@"switch_right_on"] forState:UIControlStateSelected];
+////    [friendButton setBackgroundImage:[UIImage imageNamed:@"grayl"] forState:UIControlStateSelected];
+//    friendButton.selected = YES;
+//    friendButton.userInteractionEnabled = NO;
+//    friendButton.tag = 100;
+//    friendButton.titleLabel.textAlignment = 1;
+//    friendButton.titleLabel.font = [UIFont systemFontOfSize:15.0];
+//    [friendButton setTitle:@"动态" forState:UIControlStateNormal];
+//    [friendButton addTarget:self action:@selector(friendAction:) forControlEvents:UIControlEventTouchUpInside];
+//    [switchView addSubview:friendButton];
+//    
+//    UIButton *myButton = [UIButton buttonWithType:UIButtonTypeCustom];
+//    myButton.frame = CGRectMake(friendButton.right, 2, 55, 30);
+//    [myButton setBackgroundImage:[UIImage imageNamed:@"switch_left_on"] forState:UIControlStateNormal];
+////    [myButton setBackgroundImage:[UIImage imageNamed:@"grayr"] forState:UIControlStateSelected];
+//    myButton.tag = 101;
+//    myButton.titleLabel.textAlignment = 1;
+//    myButton.titleLabel.font = [UIFont systemFontOfSize:15.0];
+//    [myButton setTitle:@"我" forState:UIControlStateNormal];
+//    [myButton addTarget:self action:@selector(myAction:) forControlEvents:UIControlEventTouchUpInside];
+//    [switchView addSubview:myButton];
+    
+    UIButton *friendButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    friendButton.frame = CGRectMake(0, 1.5, (KScreenWidth-200)/2, 27);
+    friendButton.backgroundColor = rgb(241, 184, 15, 1);
+    [friendButton setTitleColor:rgb(241, 184, 15, 1) forState:UIControlStateNormal];
+    [friendButton setTitleColor:[UIColor whiteColor] forState:UIControlStateSelected];
+    friendButton.selected = YES;
+    friendButton.userInteractionEnabled = NO;
+    friendButton.tag = 100;
+    friendButton.titleLabel.textAlignment = 1;
+    friendButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
+    [friendButton setTitle:@"动态" forState:UIControlStateNormal];
+    [friendButton addTarget:self action:@selector(friendAction:) forControlEvents:UIControlEventTouchUpInside];
+    [switchView addSubview:friendButton];
+    
+    UIButton *myButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    myButton.frame = CGRectMake(friendButton.right, 1.5, (KScreenWidth-200)/2, 27);
+    myButton.backgroundColor = [UIColor whiteColor];
+    [myButton setTitleColor:rgb(241, 184, 15, 1) forState:UIControlStateNormal];
+    [myButton setTitleColor:[UIColor whiteColor] forState:UIControlStateSelected];
+    myButton.tag = 101;
+    myButton.titleLabel.textAlignment = 1;
+    myButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
+    [myButton setTitle:@"我" forState:UIControlStateNormal];
+    [myButton addTarget:self action:@selector(myAction:) forControlEvents:UIControlEventTouchUpInside];
+    [switchView addSubview:myButton];
+    
+    UIButton *rightButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    rightButton.frame = CGRectMake(0,0,60, 44);
+    rightButton.titleEdgeInsets = UIEdgeInsetsMake(0, 20, 0, 0);
+    rightButton.showsTouchWhenHighlighted = YES;
+    [rightButton setTitleColor:rgb(241, 184, 15, 1) forState:UIControlStateNormal];
+    [rightButton setTitle:@"创建" forState:UIControlStateNormal];
+    [rightButton addTarget:self action:@selector(rightAction:) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *rightItem = [[UIBarButtonItem alloc] initWithCustomView:rightButton];
+    self.navigationItem.rightBarButtonItem = rightItem;
+}
+
+-(void)commentCountRefresh
+{
+    [_tableView reloadData];
+    [_tableView1 reloadData];
+}
+
+#pragma mark - Action
+-(void)friendAction:(UIButton *)btn{
+    btn.userInteractionEnabled = NO;
+    btn.selected = !btn.selected;
+    UIView *view = btn.superview;
+    UIButton *but = (UIButton *)[view viewWithTag:101];
+    but.selected = NO;
+    but.userInteractionEnabled = YES;
+    NSLog(@"朋友的状态啊！");
+    if (btn.selected) {
+        btn.backgroundColor = rgb(241, 184, 15, 1);
+        but.backgroundColor = [UIColor whiteColor];
+    }else{
+        btn.backgroundColor = [UIColor whiteColor];
+        but.backgroundColor = rgb(241, 184, 15, 1);
+    }
+    [self superView:self.view flag:btn.selected];
+}
+
+-(void)myAction:(UIButton *)btn{
+    btn.userInteractionEnabled = NO;
+    btn.selected = !btn.selected;
+    UIView *view = btn.superview;
+    UIButton *but = (UIButton *)[view viewWithTag:100];
+    but.selected = NO;
+    but.userInteractionEnabled = YES;
+    NSLog(@"我的状态啊~");
+    if (btn.selected) {
+        btn.backgroundColor = rgb(241, 184, 15, 1);
+        but.backgroundColor = [UIColor whiteColor];
+    }else{
+        btn.backgroundColor = [UIColor whiteColor];
+        but.backgroundColor = rgb(241, 184, 15, 1);
+    }
+    [self superView:self.view flag:!btn.selected];
+}
+
+//翻转动画实现方法
+-(void)superView:(UIView *)view flag:(BOOL)flag{
+    UIViewAnimationOptions flip = flag?UIViewAnimationOptionTransitionFlipFromRight:
+        UIViewAnimationOptionTransitionFlipFromLeft;
+    [UIView transitionWithView:view duration:.5 options:flip animations:^{
+        [view exchangeSubviewAtIndex:0 withSubviewAtIndex:1];
+    } completion:nil];
+}
+
+-(void)rightAction:(UIButton *)btn{
+    NSLog(@"+++++++++++++++++++点击了记录按钮");
+    CreateViewController *createVC = [[CreateViewController alloc] init];
+    //    [self.viewController.navigationController pushViewController:createVC animated:YES];
+//    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:createVC];
+//    [self presentViewController:nav animated:YES completion:^{
+//        
+//    }];
+    
+    [self.navigationController pushViewController:createVC animated:YES];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"push" object:nil];
+}
+
+//-(void)clickAction:(UIButton *)btn{
+//    if (btn.tag == 100) {
+//        NSLog(@"btn.tag = %d",btn.tag);
+//        CreateViewController *createVC = [[CreateViewController alloc] init];
+//        [self.navigationController pushViewController:createVC animated:YES];
+//    }
+//    if (btn.tag == 101){
+//        NSLog(@"btn.tag = %d",btn.tag);
+        // 拍照
+//        if ([self isCameraAvailable]) {
+//            if (_imagePicker == nil) {
+//                _imagePicker =  [[UIImagePickerController alloc] init];
+//            }
+//            _imagePicker.delegate = (id)self;
+//            _imagePicker.sourceType = UIImagePickerControllerSourceTypeCamera;
+//            _imagePicker.showsCameraControls = YES;
+//            _imagePicker.allowsEditing = YES;
+//            [self.navigationController presentViewController:_imagePicker animated:YES completion:nil];
+//
+//    }
+//    }
+//    if (btn.tag == 102){
+//        NSLog(@"btn.tag = %d",btn.tag);
+//        DiscoveryViewController *discoveryVC = [[DiscoveryViewController alloc] init];
+//        UINavigationController *discoveryNav = [[UINavigationController alloc] initWithRootViewController:discoveryVC];
+//        [self presentViewController:discoveryNav animated:YES completion:^{
+//            
+//        }];
+//    }
+//}
+
+-(void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info{
+    NSString *mediaType = [info objectForKey:UIImagePickerControllerMediaType];
+    
+    [_imagePicker dismissViewControllerAnimated:YES completion:NULL];
+    _imagePicker = nil;
+    UIImage *theImage = nil;
+    
+    // 判断获取类型：图片
+    if ([mediaType isEqualToString:@"public.image"]){
+        
+        // 判断，图片是否允许修改
+        if ([picker allowsEditing]){
+            //获取用户编辑之后的图像
+            theImage = [info objectForKey:UIImagePickerControllerEditedImage];
+        } else {
+            // 照片的元数据参数
+            theImage = [info objectForKey:UIImagePickerControllerOriginalImage] ;
+        }
+        NSLog(@"%@",theImage);
+    }
+
+}
+
+#pragma mark camera utility
+-(BOOL)isCameraAvailable{
+    return [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera];
+}
+    
+- (BOOL) cameraSupportsMedia:(NSString *)paramMediaType sourceType:(UIImagePickerControllerSourceType)paramSourceType{
+    __block BOOL result = NO;
+    if ([paramMediaType length] == 0) {
+        return NO;
+    }
+    NSArray *availableMediaTypes = [UIImagePickerController availableMediaTypesForSourceType:paramSourceType];
+    [availableMediaTypes enumerateObjectsUsingBlock: ^(id obj, NSUInteger idx, BOOL *stop) {
+    NSString *mediaType = (NSString *)obj;
+        if ([mediaType isEqualToString:paramMediaType]){
+            result = YES;
+            *stop= YES;
+        }
+    }];
+    return result;
+}
+
+#pragma mark - ViewAction
+//-(void)viewDidAppear:(BOOL)animated{
+//    [super viewDidAppear:animated];
+//    //开启MMDrawer菜单
+//    [self.mmDrawViewController setOpenDrawerGestureModeMask:MMOpenDrawerGestureModeAll];
+//}
+//
+//- (void)viewWillDisappear:(BOOL)animated
+//{
+//    [super viewWillDisappear:animated];
+//    //禁止MMDrawer菜单
+//    [self.mmDrawViewController setOpenDrawerGestureModeMask:MMOpenDrawerGestureModeNone];
+//}
+
+#pragma mark - BaseTableViewDelegate
+-(void)pullDone:(BaseTableView *)tableView{
+    if (tableView.tag == 100) {
+        //me
+        [self _loadNewMineData];
+    }else if(tableView.tag == 101){
+        //friend
+        [self _loadNewFriendData];
+    }
+}
+
+-(void)_loadNewFriendData{
+    NSMutableDictionary *params1 = [NSMutableDictionary dictionary];
+    NSData *tempUserData = [[NSUserDefaults standardUserDefaults] objectForKey:@"MyUserInfo"];
+    NSDictionary *tempDic = [NSJSONSerialization JSONObjectWithData:tempUserData options:NSJSONReadingMutableContainers error:nil];
+    NSLog(@"UserInfo ---------- %@",tempDic);
+    NSString *strUrl;
+    if (self.friendData.count>=15) {
+        strUrl = [NSString stringWithFormat:@"/WeiXiao/api/v1/story/userView/%@/0/%d",[tempDic objectForKey:@"id"],self.friendData.count];
+    }else{
+        strUrl = [NSString stringWithFormat:@"/WeiXiao/api/v1/story/userView/%@/0/15",[tempDic objectForKey:@"id"]];
+    }
+    [DataService requestWithURL:strUrl params:params1 httpMethod:@"GET" block1:^(id result) {
+        NSLog(@"最新朋友的:%@",result);
+        ///WeiXiao/api/v1/story/userView/8a2a4f254ab92126014ab934f5b30003/0/15
+        ///WeiXiao/api/v1/story/userView/8a2a4f254aba052f014aba24c55c0006/0/15
+        [self hideHud];
+        NSArray *array = (NSArray *)result;
+        NSMutableArray *newFriendData = [NSMutableArray array];
+        if(array.count>0){
+            for (int i = 0;i<array.count;i++) {
+                NSDictionary *dic = array[i];
+                IndexModel *model = [[IndexModel alloc] initContentWithDic:dic];
+                NSString *isodd = i%2 == 0?@"1":@"0";
+                model.isOdd = isodd;
+                if ([[dic objectForKey:@"templateId"] length]<=0) {
+                    model.templateId = @"1";
+                }else{
+                    model.templateId = [dic objectForKey:@"templateId"];
+                }
+                model.descrip = [dic objectForKey:@"description"];
+                [newFriendData addObject:model];
+            }
+            self.friendData = newFriendData;
+            _tableView.indexData = _friendData;
+            [_tableView reloadData];
+            _tableView.data = newFriendData;
+            
+            if (_friendData.count<15) {
+                [timer2 invalidate];
+            }
+            NSArray *keys = @[@"tableView",@"array"];
+            NSArray *values = @[_tableView,self.friendData];
+            NSDictionary *argDic = [NSDictionary dictionaryWithObjects:values forKeys:keys];
+            [self performSelectorInBackground:@selector(requestZanAndComment:) withObject:argDic];
+        }else{
+            tipLabel.hidden = NO;
+            _tableView->upLoading = YES;
+            [UIView transitionWithView:self.view duration:1.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+                tipLabel.text = @"还没有好友给你分享故事哦！";
+                CGRect rect = tipLabel.frame;
+                rect.origin.y = KScreenHeight-180;
+                tipLabel.frame = rect;
+            } completion:nil];
+            [self performSelector:@selector(hideTip) withObject:nil afterDelay:2];
+        }
+        [self hiddenHeaderRefresh:_tableView];
+    } failLoad:^(id result) {
+        
+    }];
+}
+
+-(void)hideTip{
+    [UIView animateWithDuration:1.0 animations:^{
+        tipLabel.hidden = YES;
+    }];
+}
+
+-(void)_loadNewMineData{
+    NSData *tempUserData = [[NSUserDefaults standardUserDefaults] objectForKey:@"MyUserInfo"];
+    NSDictionary *tempDic = [NSJSONSerialization JSONObjectWithData:tempUserData options:NSJSONReadingMutableContainers error:nil];
+    NSLog(@"UserInfo ---------- %@",tempDic);
+    NSMutableDictionary *params1 = [NSMutableDictionary dictionary];
+    NSString *strUrl;
+    if (self.mineData.count>=15) {
+        strUrl = [NSString stringWithFormat:@"/WeiXiao/api/v1/story/list/%@/0/%d",[tempDic objectForKey:@"usn"],self.mineData.count];
+    }else{
+        strUrl = [NSString stringWithFormat:@"/WeiXiao/api/v1/story/list/%@/0/15",[tempDic objectForKey:@"usn"]];
+    }
+    [DataService requestWithURL:strUrl params:params1 httpMethod:@"GET" block1:^(id result) {
+        [self hideHud];
+        NSLog(@"我的:%@",result);
+        NSArray *array = (NSArray *)result;
+        //[arrPublish addObject:array];
+        NSMutableArray *newMineData = [NSMutableArray array];
+        if (array.count>0) {
+            for (int i = 0;i<array.count;i++) {
+                NSDictionary *dic = array[i];
+                IndexModel *model = [[IndexModel alloc] initContentWithDic:dic];
+                NSString *isodd = i%2 == 0?@"1":@"0";
+                model.isOdd = isodd;
+                if ([[dic objectForKey:@"templateId"] length]<=0) {
+                    model.templateId = @"1";
+                }else{
+                    model.templateId = [dic objectForKey:@"templateId"];
+                }
+                model.descrip = [dic objectForKey:@"description"];
+                [newMineData addObject:model];
+            }
+            self.mineData = newMineData;
+            _tableView1.indexData = _mineData;
+            [_tableView1 reloadData];
+            _tableView1.data = newMineData;
+            if (_mineData.count<15) {
+                [timer1 invalidate];
+            }
+            NSArray *keys = @[@"tableView",@"array"];
+            NSArray *values = @[_tableView1,self.mineData];
+            NSDictionary *argDic = [NSDictionary dictionaryWithObjects:values forKeys:keys];
+            [self performSelectorInBackground:@selector(requestZanAndComment:) withObject:argDic];
+        }else{
+            tipLabel.hidden = NO;
+            _tableView1->upLoading = YES;
+            [UIView transitionWithView:self.view duration:1.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+                tipLabel.text = @"您还没有创建故事哦！";
+                CGRect rect = tipLabel.frame;
+                rect.origin.y = KScreenHeight-180;
+                tipLabel.frame = rect;
+            } completion:nil];
+            [self performSelector:@selector(hideTip) withObject:nil afterDelay:2];
+        }
+        [self hiddenHeaderRefresh:_tableView1];
+    } failLoad:^(id result) {
+        
+    }];
+}
+
+-(void)pullUp:(BaseTableView *)tableView{
+    if (tableView.tag == 100) {
+        //me
+        [self _loadOldMineData];
+    }else if (tableView.tag == 101){
+        //friend
+        [self _loadOldFriendData];
+    }
+}
+
+-(void)_loadOldMineData{
+    NSMutableDictionary *params1 = [NSMutableDictionary dictionary];
+    NSData *tempUserData = [[NSUserDefaults standardUserDefaults] objectForKey:@"MyUserInfo"];
+    NSDictionary *tempDic = [NSJSONSerialization JSONObjectWithData:tempUserData options:NSJSONReadingMutableContainers error:nil];
+    NSLog(@"UserInfo ---------- %@",tempDic);
+    NSString *urlstring = [NSString stringWithFormat:@"/WeiXiao/api/v1/story/list/%@/%d/15",[tempDic objectForKey:@"usn"],self.mineData.count];
+    [DataService requestWithURL:urlstring params:params1 httpMethod:@"GET" block1:^(id result) {
+        NSLog(@"我的:%@",result);
+        NSArray *array = (NSArray *)result;
+        NSMutableArray *oldMineData = [NSMutableArray array];
+        for (int i = 0;i<array.count;i++) {
+            NSDictionary *dic = array[i];
+            IndexModel *model = [[IndexModel alloc] initContentWithDic:dic];
+            NSString *isodd = i%2 == 0?@"1":@"0";
+            model.isOdd = isodd;
+            if ([dic objectForKey:@"templateId"]) {
+                model.templateId = @"1";
+            }else{
+                model.templateId = [dic objectForKey:@"templateId"];
+            }
+            model.descrip = [dic objectForKey:@"description"];
+            [oldMineData addObject:model];
+        }
+        [self.mineData addObjectsFromArray:oldMineData];
+        
+        _tableView1.indexData = _mineData;
+        [_tableView1 reloadData];
+        _tableView1.data = oldMineData;
+        if (array.count < 15) {
+            finishTipLabel.hidden = NO;
+            [UIView transitionWithView:self.view duration:1.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+                finishTipLabel.text = @"已经到底啦 ~ ";
+                CGRect rect = finishTipLabel.frame;
+                rect.origin.y = KScreenHeight-180;
+                finishTipLabel.frame = rect;
+                [timer1 invalidate];
+            } completion:nil];
+            [self performSelector:@selector(hideFinishTip) withObject:nil afterDelay:2];
+        }
+        NSArray *keys = @[@"tableView",@"array"];
+        NSArray *values = @[_tableView1,self.mineData];
+        NSDictionary *argDic = [NSDictionary dictionaryWithObjects:values forKeys:keys];
+        [self performSelectorInBackground:@selector(requestZanAndComment:) withObject:argDic];
+        //        [self hiddenFooterRefresh:_tableView1];
+    } failLoad:^(id result) {
+        
+    }];
+}
+
+-(void)hideFinishTip{
+    [UIView animateWithDuration:1.0 animations:^{
+        finishTipLabel.hidden = YES;
+    }];
+}
+
+-(void)_loadOldFriendData{
+    NSData *tempUserData = [[NSUserDefaults standardUserDefaults] objectForKey:@"MyUserInfo"];
+    NSDictionary *tempDic = [NSJSONSerialization JSONObjectWithData:tempUserData options:NSJSONReadingMutableContainers error:nil];
+    NSLog(@"UserInfo ---------- %@",tempDic);
+    NSMutableDictionary *params1 = [NSMutableDictionary dictionary];
+    NSString *urlstring = [NSString stringWithFormat:@"/WeiXiao/api/v1/story/userView/%@/%d/15",[tempDic objectForKey:@"id"],self.friendData.count];
+    [DataService requestWithURL:urlstring params:params1 httpMethod:@"GET" block1:^(id result) {
+        NSLog(@"最热的:%@",result);
+        NSArray *array = (NSArray *)result;
+        NSMutableArray *oldFriendData = [NSMutableArray array];
+        for (int i = 0;i<array.count;i++) {
+            NSDictionary *dic = array[i];
+            IndexModel *model = [[IndexModel alloc] initContentWithDic:dic];
+            NSString *isodd = i%2 == 0?@"1":@"0";
+            model.isOdd = isodd;
+            if ([dic objectForKey:@"templateId"]) {
+                model.templateId = @"1";
+            }else{
+                model.templateId = [dic objectForKey:@"templateId"];
+            }
+            model.descrip = [dic objectForKey:@"description"];
+            [oldFriendData addObject:model];
+        }
+        [self.friendData addObjectsFromArray:oldFriendData];
+        
+        _tableView.indexData = _friendData;
+        [_tableView reloadData];
+        _tableView.data = oldFriendData;
+        if (array.count < 15) {
+            finishTipLabel.hidden = NO;
+            [UIView transitionWithView:self.view duration:1.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+                finishTipLabel.text = @"已经到底啦 ~ ";
+                CGRect rect = finishTipLabel.frame;
+                rect.origin.y = KScreenHeight-180;
+                finishTipLabel.frame = rect;
+                [timer2 invalidate];
+            } completion:nil];
+            [self performSelector:@selector(hideFinishTip) withObject:nil afterDelay:2];
+        }
+        NSArray *keys = @[@"tableView",@"array"];
+        NSArray *values = @[_tableView,self.friendData];
+        NSDictionary *argDic = [NSDictionary dictionaryWithObjects:values forKeys:keys];
+        [self performSelectorInBackground:@selector(requestZanAndComment:) withObject:argDic];
+        //        [self hiddenFooterRefresh:_tableView];
+    } failLoad:^(id result) {
+        
+    }];
+}
+
+-(void)hiddenHeaderRefresh:(IndexTableView *)tv{
+    [tv doneLoadingTableViewData];
+}
+
+-(void)hiddenFooterRefresh:(IndexTableView *)tv{
+    tv.isRefresh = YES;
+}
+
+
+
+#pragma mark - MemoryWarning
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+    // 此处做兼容处理需要加上ios6.0的宏开关，保证是在6.0下使用的,6.0以前屏蔽以下代码，否则会在下面使用self.view时自动加载viewDidLoad
+    if (self.isViewLoaded && !self.view.window)// 是否是正在使用的视图
+    {
+        _tableView = nil;
+        _tableView1 = nil;
+        _tabBarImgView = nil;
+        tipLabel = nil;
+        self.view = nil;
+        self.friendData = nil;
+        self.mineData = nil;
+    }
+    
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end
+
+
+

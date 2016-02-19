@@ -1,0 +1,570 @@
+//
+//  groupTableViewCell.m
+//  FamilyAlbum
+//
+//  Created by tutu on 14/12/18.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "groupTableViewCell.h"
+#import "UIImageView+WebCache.h"
+#import "MyFamilyViewController.h"
+#import "AddFriendsViewController.h"
+#import "PSConfigs.h"
+@implementation groupTableViewCell
+ 
+-(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier withArray:(NSArray *)arr withId:(NSString *)myId{
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        self.isInvite = myId;
+//        [self _iniViews:arr];
+        
+    }
+    return self;
+}
+
+-(void)_iniViews:(NSArray *)a{
+   
+    
+    self.backgroundColor = [UIColor colorWithRed:240/255.0 green:240/255.0 blue:240/255.0 alpha:1];
+    self.selectionStyle = UITableViewCellSelectionStyleNone;
+    NSLog(@"%d",(int)a.count);
+    for (int i = 0; i<a.count-1; i++) {
+        
+        UIImageView *iv = (UIImageView *)[self.contentView viewWithTag:100+i];
+        [iv.layer setBorderWidth:0.5];
+        [iv.layer setBorderColor:[[UIColor lightGrayColor] CGColor]];
+        if (iv == nil)
+        {
+            iv = [[UIImageView alloc]initWithFrame:CGRectZero];
+            iv.tag = 100+i;
+            iv.layer.cornerRadius = KScreenWidth/16;
+            iv.layer.masksToBounds = YES;
+            iv.userInteractionEnabled = YES;
+            iv.image = [UIImage imageNamed:@"defaultAva"];
+            [self.contentView addSubview:iv];
+            
+            if ([self.isInvite isEqualToString:@"yes"]) {
+        
+                UIImageView *ig = (UIImageView *)[self.contentView viewWithTag:1000+i];
+                if (ig == nil)
+                {
+                    ig = [[UIImageView alloc]initWithFrame:CGRectZero];
+                    ig.tag = 1000+i;
+                    [self.contentView addSubview:ig];
+                    UITapGestureRecognizer * tapGr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)];
+                    [iv addGestureRecognizer:tapGr];
+                }
+            }
+            else
+            {
+                UITapGestureRecognizer * tapGr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageTap:)];
+                [iv addGestureRecognizer:tapGr];
+                
+                UILongPressGestureRecognizer *longPressGr = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressToDo:)];
+                longPressGr.minimumPressDuration = 1.0;
+                [iv addGestureRecognizer:longPressGr];
+                
+            }
+            
+            UILabel *label = (UILabel *)[self.contentView viewWithTag:200+i];
+            if (label == nil)
+            {
+                label = [[UILabel alloc] initWithFrame:CGRectZero];
+                label.tag = 200+i;
+                label.textAlignment = NSTextAlignmentCenter;
+                label.font = [UIFont systemFontOfSize:11];
+                [self.contentView addSubview:label];
+            }
+        }
+    }
+    
+    int index = (int)(a.count)-1;
+    while (1)
+    {
+        UIImageView *imageView = (UIImageView *)[self.contentView viewWithTag:100+index];
+        [imageView.layer setBorderWidth:0.5];
+        [imageView.layer setBorderColor:[[UIColor lightGrayColor] CGColor]];
+        UILabel *label = (UILabel *)[self.contentView viewWithTag:200+index];
+        UIImageView *ig = (UIImageView *)[self.contentView viewWithTag:1000+index];
+        if (imageView)
+        {
+            [imageView removeFromSuperview];
+            [label removeFromSuperview];
+            [ig removeFromSuperview];
+        }
+        else
+        {
+            break;
+        }
+        index ++;
+    }
+
+    if (btn == nil)
+    {
+        btn = [UIButton buttonWithType:UIButtonTypeCustom];
+        btn.frame = CGRectZero;
+        
+        [btn setImage:[UIImage imageNamed:@"addFriends"] forState:UIControlStateNormal];
+        [btn addTarget:self action:@selector(click:) forControlEvents:UIControlEventTouchUpInside];
+        [self addSubview:btn];
+    }
+}
+
+-(void)imageTap:(UITapGestureRecognizer *)tap
+{
+    UIImageView *imageView = (UIImageView *)tap.view;
+    NSDictionary *dic = self.a[imageView.tag-100];
+    
+    AddFriendsViewController *addFriendsVC = [[AddFriendsViewController alloc] init];
+    addFriendsVC.tapFriendInfoDic = dic;
+    addFriendsVC.addCount = _row+1;
+    
+    addFriendsVC.delegate = self.viewController;
+    [self.viewController.navigationController pushViewController:addFriendsVC animated:YES];
+}
+
+-(void)longPressToDo:(UILongPressGestureRecognizer*)gesture
+{
+    if(gesture.state == UIGestureRecognizerStateBegan)
+    {
+       UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"提示" message:@"确定删除好友吗？" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
+        UIImageView *iv = (UIImageView *)gesture.view;
+        dic11 = self.a[iv.tag-100];
+        [alert show];
+    }
+}
+-(void)tap:(UITapGestureRecognizer*)gesture
+{
+    d1 = [NSMutableDictionary dictionary];
+    d2 = [NSMutableDictionary dictionary];
+    dshareid = [NSMutableDictionary dictionary];
+    dcancelid = [NSMutableDictionary dictionary];
+    NSLog(@"分享进来时===========================%@",self.tv.shareid);
+    NSNumber *status = [self.a[gesture.view.tag-100] objectForKey:@"status"];
+    UIImageView *imv = (UIImageView*)[self.contentView viewWithTag:gesture.view.tag+900];
+
+    if ([status isEqual:@0])
+    {
+        
+        imv.image = [UIImage imageNamed:@"yesCheck"];
+        NSString *pusn = [self.a[gesture.view.tag-100] objectForKey:@"friendUsn"];
+       
+        if ([self.tv.addPhone indexOfObject:pusn] == NSNotFound)
+        {
+            [d1 setObject:pusn forKey:@"usn"];
+            [self.tv.addPhone addObject:d1];
+        }
+        [self.tv.cancelPhone removeObject:d1];
+        NSLog(@"%@",self.tv.addPhone);
+        [self.a[gesture.view.tag-100] setObject:@1 forKey:@"status"];
+       
+        NSString *pid = [self.a[gesture.view.tag-100] objectForKey:@"friendId"];
+        [dshareid setObject:pid forKey:@"userId"];
+        if ([self.tv.shareid indexOfObject:dshareid] == NSNotFound)
+        {
+            
+            [self.tv.shareid addObject:dshareid];
+         
+        }
+       
+    }
+    else if([status isEqual:@1])
+    {
+        imv.image = [UIImage imageNamed:@"noCheck"];
+        NSString *pusn = [self.a[gesture.view.tag-100] objectForKey:@"friendUsn"];
+        if ([self.tv.cancelPhone indexOfObject:pusn] == NSNotFound) {
+            [d2 setObject:pusn forKey:@"usn"];
+            [self.tv.cancelPhone addObject:d2];
+        }
+        [self.tv.addPhone removeObject:d2];
+        NSLog(@"%@",self.tv.cancelPhone);
+        [self.a[gesture.view.tag-100] setObject:@0 forKey:@"status"];
+       
+        NSString *pid = [self.a[gesture.view.tag-100] objectForKey:@"friendId"];
+        [dshareid setObject:pid forKey:@"userId"];
+        NSLog(@"pid----------------------%@",pid);
+        if ([self.tv.shareid indexOfObject:dshareid] != NSNotFound)
+        {
+            
+            [self.tv.shareid removeObject:dshareid];
+            
+        }
+ 
+    }
+    NSLog(@"self.tv.share ------%@",self.tv.shareid);
+    
+}
+-(MyFamilyViewController *)tv{
+    UIResponder *next = self.nextResponder;
+    do {
+        if ([next isKindOfClass:[MyFamilyViewController class]]) {
+            return (MyFamilyViewController *)next;
+        }
+        next = next.nextResponder;
+    } while (next != nil);
+    return nil;
+}
+-(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == 1) {
+        NSString *s = [dic11 objectForKey:@"id"];
+        NSString *urlstring = [NSString stringWithFormat:@"/WeiXiao/api/v1/user/addressBook/delete/%@",s];
+        [DataService requestWithURL:urlstring params:nil httpMethod:@"GET" block1:^(id result) {
+            NSLog(@"%@",result);
+            NSDictionary *dic = (NSDictionary *)result;
+            if ([[dic objectForKey:@"result"] isEqual:@0]) {
+                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"提示" message:@"删除成功" delegate:nil cancelButtonTitle:@"知道了" otherButtonTitles:nil, nil];
+                [alert show];
+                [self.a removeObject:dic11];
+                [self.tv1 reloadData];
+            }else{
+                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"提示" message:@"删除失败" delegate:nil cancelButtonTitle:@"知道了" otherButtonTitles:nil, nil];
+                [alert show];
+            }
+        } failLoad:^(id result) {
+            
+        }];
+    }
+    
+}
+-(UITableView *)tv1{
+    UIResponder *next = self.nextResponder;
+    do {
+        if ([next isKindOfClass:[UITableView class]]) {
+            return (UITableView *)next;
+        }
+        next = next.nextResponder;
+    } while (next != nil);
+    return nil;
+}
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+}
+-(void)setA:(NSMutableArray *)a{
+    _a = a;
+    [self _iniViews:_a];
+    [self setNeedsLayout];
+}
+-(void)layoutSubviews
+{
+    [super layoutSubviews];
+    
+    btn.frame = CGRectMake(10+((KScreenWidth-120)/5+20)*4, 15, (KScreenWidth-120)/5, (KScreenWidth-120)/5);
+    btn.tag = self.row+51;
+    
+    for (int i = 0; i<_a.count-1; i++) {
+        NSDictionary *dic = _a[i];
+        UIImageView *iv = (UIImageView *)[self.contentView viewWithTag:100+i];
+        if (i<4) {
+            iv.frame = CGRectMake(10+((KScreenWidth-120)/5+20)*(i%5), 15+((KScreenWidth-120)/5+30)*(i/4), (KScreenWidth-120)/5, (KScreenWidth-120)/5);
+            UILabel *nickName = (UILabel *)[self.contentView viewWithTag:200+i];
+            nickName.frame = CGRectMake(iv.left-10, iv.bottom+10, iv.width+20, 20);
+            if ([[dic objectForKey:@"image"] isEqualToString:@"0"]) {
+                [iv setImage:[UIImage imageNamed:@"defaultAva"]];
+            }else{
+                UIImage *image = [PSConfigs getImageWithRemark:dic[kFriendRemark]];
+                if (image)
+                {
+                    iv.image = image;
+                }
+                else
+                {
+                    image = [UIImage imageNamed:@"defaultAva"];
+                }
+                [iv sd_setImageWithURL:[NSURL URLWithString:[dic objectForKey:@"image"]] placeholderImage:image];
+            }
+            if ([[dic objectForKey:@"friendRemark"] length]>0) {
+                nickName.text = [dic objectForKey:@"friendRemark"];
+            }else if([[dic objectForKey:@"nickname"] length]>0) {
+                nickName.text = [dic objectForKey:@"nickname"];
+            }else{
+                nickName.text = @"null";
+            }
+            if ([self.isInvite isEqualToString:@"yes"]) {
+                //勾底图标
+                UIImageView *ig = (UIImageView *)[self.contentView viewWithTag:1000+i];
+                ig.frame = CGRectMake(10+((KScreenWidth-120)/5+20)*(i%5)+20, 15+((KScreenWidth-120)/5+30)*(i/4)+20, (KScreenWidth-120)/8, (KScreenWidth-120)/8);
+                NSNumber *s3 = [self.a[ig.tag-1000] objectForKey:@"status"];
+                
+                if ([s3 isEqual:@0]) {
+                    ig.image = [UIImage imageNamed:@"noCheck"];
+                }
+                else if([s3 isEqual:@1])
+                {
+                    ig.image = [UIImage imageNamed:@"yesCheck"];
+                }
+            }
+        
+        }else{
+            iv.frame = CGRectMake(10+((KScreenWidth-120)/5+20)*((i-4)%5), 20+((KScreenWidth-120)/5+35)*((i+1)/5), (KScreenWidth-120)/5, (KScreenWidth-120)/5);
+            UILabel *nickName = (UILabel *)[self.contentView viewWithTag:200+i];
+            nickName.frame = CGRectMake(iv.left-10, iv.bottom+10, iv.width+20, 20);
+            if ([[dic objectForKey:@"image"] isEqualToString:@"0"]) {
+                [iv setImage:[UIImage imageNamed:@"defaultAva"]];
+            }else{
+                [iv sd_setImageWithURL:[NSURL URLWithString:[dic objectForKey:@"image"]] placeholderImage:[UIImage imageNamed:@"defaultAva"]];
+            }
+            if ([[dic objectForKey:@"friendRemark"] length]>0) {
+                nickName.text = [dic objectForKey:@"friendRemark"];
+            }else if([[dic objectForKey:@"nickname"] length]>0) {
+                nickName.text = [dic objectForKey:@"nickname"];
+            }else{
+                nickName.text = @"null";
+            }
+            if ([self.isInvite isEqualToString:@"yes"]) {
+                //勾底图标
+                UIImageView *ig = (UIImageView *)[self.contentView viewWithTag:1000+i];
+                ig.frame = CGRectMake(10+((KScreenWidth-120)/5+20)*((i-4)%5)+20,20+((KScreenWidth-120)/5+35)*((i+1)/5)+20, (KScreenWidth-120)/8, (KScreenWidth-120)/8);
+                NSString *s3 = [self.a[ig.tag-1000] objectForKey:@"status"];
+                if ([s3 isEqual:@0]) {
+                    ig.image = [UIImage imageNamed:@"noCheck"];
+                }
+                else if([s3 isEqual:@1])
+                {
+                    ig.image = [UIImage imageNamed:@"yesCheck"];
+                }
+            }
+
+        }
+    }
+}
+
+-(void)click:(UIButton *)sender
+{
+    AddFriendsViewController *addFriendsVC = [[AddFriendsViewController alloc] init];
+    addFriendsVC.addCount = sender.tag-50;
+
+    addFriendsVC.delegate = self.viewController;
+    [self.viewController.navigationController pushViewController:addFriendsVC animated:YES];
+}
+
+-(MyFamilyViewController *)viewController{
+    UIResponder *next = self.nextResponder;
+    do {
+        if ([next isKindOfClass:[MyFamilyViewController class]]) {
+            return (MyFamilyViewController *)next;
+        }
+        next = next.nextResponder;
+    } while (next != Nil);
+    return Nil;
+}
+
+/*
+ //layout
+ if ((self.a.count-1)%4 == 0)
+ {
+ 
+ for (int i = 0; i<(self.a.count-1)/4; i++)
+ {
+ for (int j = 0; j < 4; j++)
+ {
+ UIImageView *iv= (UIImageView *)[self.contentView viewWithTag:100+i*4+j];
+ iv.frame = CGRectMake(20*(j+1)+KScreenWidth/8*j,20*(i+1)+KScreenWidth/8*i, KScreenWidth/8, KScreenWidth/8);
+ 
+ NSString *s1 = [self.a[iv.tag-100] objectForKey:@"image1"];
+ if (s1.length > 1) {
+ [iv sd_setImageWithURL:[NSURL URLWithString:s1]];
+ }
+ else
+ {
+ iv.image = [UIImage imageNamed:@"defaultAva.png"];
+ }
+ 
+ UILabel *label = (UILabel *)[self.contentView viewWithTag:200+i*4+j];
+ label.frame = CGRectMake(20*(j+1)+KScreenWidth/8*j,(18+KScreenWidth/8)*(i+1), KScreenWidth/8, KScreenWidth/12);
+ NSString *s2= [self.a[label.tag-200] objectForKey:@"nickname1"];
+ if (s2.length>1) {
+ label.text = s2;
+ }
+ else
+ {
+ label.text = @"无昵称";
+ }
+ 
+ }
+ 
+ }
+ }
+ if ((self.a.count-1)%4 != 0)
+ {
+ for (int i = 0; i<(self.a.count-1)/4+1; i++)
+ {
+ int shang = (self.a.count-1)/4;
+ int yushu = (self.a.count-1)%4;
+ if (i <shang)
+ {
+ for (int j = 0; j < 4; j++)
+ {
+ UIImageView *iv= (UIImageView *)[self.contentView viewWithTag:100+i*4+j];
+ iv.frame = CGRectMake(20*(j+1)+KScreenWidth/8*j,20*(i+1)+KScreenWidth/8*i, KScreenWidth/8, KScreenWidth/8);
+ 
+ NSString *s1 = [self.a[iv.tag-100] objectForKey:@"image1"];
+ if (s1.length > 1) {
+ [iv sd_setImageWithURL:[NSURL URLWithString:s1]];
+ }
+ else
+ {
+ iv.image = [UIImage imageNamed:@"defaultAva.png"];
+ }
+ 
+ UILabel *label = (UILabel *)[self.contentView viewWithTag:200+i*4+j];
+ label.frame = CGRectMake(20*(j+1)+KScreenWidth/8*j,(18+KScreenWidth/8)*(i+1), KScreenWidth/8, KScreenWidth/12);
+ NSString *s2= [self.a[label.tag-200] objectForKey:@"nickname1"];
+ if (s2.length> 1) {
+ label.text = s2;
+ }
+ else
+ {
+ label.text = @"无昵称";
+ }
+ }
+ }
+ else
+ {
+ for (int j = 0; j < yushu; j++)
+ {
+ UIImageView *iv= (UIImageView *)[self.contentView viewWithTag:100+i*4+j];
+ iv.frame = CGRectMake(20*(j+1)+KScreenWidth/8*j,20*(i+1)+KScreenWidth/8*i, KScreenWidth/8, KScreenWidth/8);
+ 
+ NSString *s1 = [self.a[iv.tag-100] objectForKey:@"image1"];
+ NSLog(@">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>%@",s1);
+ if (s1.length > 1) {
+ [iv sd_setImageWithURL:[NSURL URLWithString:s1]];
+ }
+ else
+ {
+ iv.image = [UIImage imageNamed:@"defaultAva.png"];
+ }
+ 
+ UILabel *label = (UILabel *)[self.contentView viewWithTag:200+i*4+j];
+ label.frame = CGRectMake(20*(j+1)+KScreenWidth/8*j,(18+KScreenWidth/8)*(i+1), KScreenWidth/8, KScreenWidth/12);
+ NSString *s2= [self.a[label.tag-200] objectForKey:@"nickname1"];
+ if (s2.length> 1) {
+ label.text = s2;
+ }
+ else
+ {
+ label.text = @"无昵称";
+ }
+ 
+ }
+ }
+ 
+ 
+ }
+ 
+ }
+ */
+
+/*
+ //initviews
+ 
+ if ((self.a.count-1)%4 == 0)
+ {
+ 
+ for (int i = 0; i<(self.a.count-1)/4; i++)
+ {
+ for (int j = 0; j < 4; j++)
+ {
+ UIImageView *iv= (UIImageView *)[self.contentView viewWithTag:100+i*4+j];
+ iv.frame = CGRectMake(20*(j+1)+KScreenWidth/8*j,20*(i+1)+KScreenWidth/8*i, KScreenWidth/8, KScreenWidth/8);
+ 
+ NSString *s1 = [self.a[iv.tag-100] objectForKey:@"image1"];
+ if (s1.length > 1) {
+ [iv sd_setImageWithURL:[NSURL URLWithString:s1]];
+ }
+ else
+ {
+ iv.image = [UIImage imageNamed:@"defaultAva.png"];
+ }
+ 
+ UILabel *label = (UILabel *)[self.contentView viewWithTag:200+i*4+j];
+ label.frame = CGRectMake(20*(j+1)+KScreenWidth/8*j,(18+KScreenWidth/8)*(i+1), KScreenWidth/8, KScreenWidth/12);
+ NSString *s2= [self.a[label.tag-200] objectForKey:@"nickname1"];
+ if (s2.length>1) {
+ label.text = s2;
+ }
+ else
+ {
+ label.text = @"无昵称";
+ }
+ 
+ }
+ 
+ }
+ }
+ if ((self.a.count-1)%4 != 0)
+ {
+ for (int i = 0; i<(self.a.count-1)/4+1; i++)
+ {
+ int shang = (self.a.count-1)/4;
+ int yushu = (self.a.count-1)%4;
+ if (i <shang)
+ {
+ for (int j = 0; j < 4; j++)
+ {
+ UIImageView *iv= (UIImageView *)[self.contentView viewWithTag:100+i*4+j];
+ iv.frame = CGRectMake(20*(j+1)+KScreenWidth/8*j,20*(i+1)+KScreenWidth/8*i, KScreenWidth/8, KScreenWidth/8);
+ 
+ NSString *s1 = [self.a[iv.tag-100] objectForKey:@"image1"];
+ if (s1.length > 1) {
+ [iv sd_setImageWithURL:[NSURL URLWithString:s1]];
+ }
+ else
+ {
+ iv.image = [UIImage imageNamed:@"defaultAva.png"];
+ }
+ 
+ UILabel *label = (UILabel *)[self.contentView viewWithTag:200+i*4+j];
+ label.frame = CGRectMake(20*(j+1)+KScreenWidth/8*j,(18+KScreenWidth/8)*(i+1), KScreenWidth/8, KScreenWidth/12);
+ NSString *s2= [self.a[label.tag-200] objectForKey:@"nickname1"];
+ if (s2.length> 1) {
+ label.text = s2;
+ }
+ else
+ {
+ label.text = @"无昵称";
+ }
+ }
+ }
+ else
+ {
+ for (int j = 0; j < yushu; j++)
+ {
+ UIImageView *iv= (UIImageView *)[self.contentView viewWithTag:100+i*4+j];
+ iv.frame = CGRectMake(20*(j+1)+KScreenWidth/8*j,20*(i+1)+KScreenWidth/8*i, KScreenWidth/8, KScreenWidth/8);
+ 
+ NSString *s1 = [self.a[iv.tag-100] objectForKey:@"image1"];
+ NSLog(@">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>%@",s1);
+ if (s1.length > 1) {
+ [iv sd_setImageWithURL:[NSURL URLWithString:s1]];
+ }
+ else
+ {
+ iv.image = [UIImage imageNamed:@"defaultAva.png"];
+ }
+ 
+ UILabel *label = (UILabel *)[self.contentView viewWithTag:200+i*4+j];
+ label.frame = CGRectMake(20*(j+1)+KScreenWidth/8*j,(18+KScreenWidth/8)*(i+1), KScreenWidth/8, KScreenWidth/12);
+ NSString *s2= [self.a[label.tag-200] objectForKey:@"nickname1"];
+ if (s2.length> 1) {
+ label.text = s2;
+ }
+ else
+ {
+ label.text = @"无昵称";
+ }
+ 
+ }
+ }
+ 
+ 
+ }
+ 
+ }
+ 
+ */
+
+@end

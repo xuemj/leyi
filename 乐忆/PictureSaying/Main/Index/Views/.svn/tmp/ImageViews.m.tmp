@@ -1,0 +1,246 @@
+//
+//  ImageViews.m
+//  PictureSaying
+//
+//  Created by tutu on 14/12/18.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "ImageViews.h"
+#import "UIImageView+WebCache.h"
+#define ImageUrl @"http://192.168.1.200:8888/"
+#import "PSConfigs.h"
+
+@implementation ImageViews
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+        [self _initViews];
+    }
+    return self;
+}
+
+-(void)_initViews{
+    iv1 = [[UIImageView alloc] initWithFrame:CGRectZero];
+    iv1.contentMode = UIViewContentModeScaleAspectFill;
+    iv1.clipsToBounds = YES;
+    iv2 = [[UIImageView alloc] initWithFrame:CGRectZero];
+    iv2.contentMode = UIViewContentModeScaleAspectFill;
+    iv2.clipsToBounds = YES;
+    iv3 = [[UIImageView alloc] initWithFrame:CGRectZero];
+    iv3.contentMode = UIViewContentModeScaleAspectFill;
+    iv3.clipsToBounds = YES;
+    iv4 = [[UIImageView alloc] initWithFrame:CGRectZero];
+    iv4.contentMode = UIViewContentModeScaleAspectFill;
+    iv4.clipsToBounds = YES;
+    iv5 = [[UIImageView alloc] initWithFrame:CGRectZero];
+    iv5.contentMode = UIViewContentModeScaleAspectFill;
+    iv5.clipsToBounds = YES;
+    [self addSubview:iv1];
+    [self addSubview:iv2];
+    [self addSubview:iv3];
+    [self addSubview:iv4];
+    [self addSubview:iv5];
+}
+
+-(void)setPics:(NSArray *)pics{
+    if (_pics != pics) {
+        _pics = pics;
+        [self setNeedsLayout];
+    }
+}
+
+-(void)layoutSubviews{
+    [super layoutSubviews];
+    if (_pics.count == 1) {
+        iv1.frame = CGRectMake(0, 0, (self.width-20)/3, (self.width-20)/3);
+        iv1.image = [UIImage imageNamed:@"noDataShow@2x.png"];
+        if (![[_pics[0] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            
+            if ([[_pics[0] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[0] objectForKey:@"path"]];
+                urlHaha = [NSMutableString stringWithString:[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha]];
+                urlHaha = [NSMutableString stringWithString:[urlHaha stringByAppendingString:kImage180]];
+                NSLog(@"%@",urlHaha);
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+            }else{
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[0] objectForKey:@"path"]]]];
+            }
+        }
+    }else if (_pics.count == 2){
+        iv1.frame = CGRectMake(0, 0, (self.width-20)/3, (self.width-20)/3);
+        iv1.image = [UIImage imageNamed:@"noDataShow@2x.png"];
+        if (![[_pics[0] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[0] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[0] objectForKey:@"path"]];
+                urlHaha = [NSMutableString stringWithString:[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha]];
+                urlHaha = [NSMutableString stringWithString:[urlHaha stringByAppendingString:kImage180]];
+                NSLog(@"%@",urlHaha);
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+            }else{
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[0] objectForKey:@"path"]]]];
+            }
+        }
+        iv2.frame = CGRectMake(iv1.right+10, 0, (self.width-20)/3, (self.width-20)/3);
+        iv2.image = [UIImage imageNamed:@"noDataShow@2x.png"];
+        if (![[_pics[1] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[1] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[1] objectForKey:@"path"]];
+                urlHaha = [NSMutableString stringWithString:[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha]];
+                urlHaha = [NSMutableString stringWithString:[urlHaha stringByAppendingString:kImage180]];
+                [iv2 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+            }else{
+                [iv2 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[1] objectForKey:@"path"]]]];
+            }
+        }
+    }else if (_pics.count == 3){
+        iv1.frame = CGRectMake(0, 0, (self.width-20)/3, (self.width-20)/3);
+        if (![[_pics[0] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[0] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[0] objectForKey:@"path"]];
+                urlHaha = [NSMutableString stringWithString:[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha]];
+                urlHaha = [NSMutableString stringWithString:[urlHaha stringByAppendingString:kImage180]];
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:
+                                         urlHaha]];
+            }else{
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[0] objectForKey:@"path"]]]];
+            }
+        }
+        iv2.frame = CGRectMake(iv1.right+10, 0, (self.width-20)/3, (self.width-20)/3);
+        if (![[_pics[1] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[1] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[1] objectForKey:@"path"]];
+                urlHaha = [NSMutableString stringWithString:[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha]];
+                urlHaha = [NSMutableString stringWithString:[urlHaha stringByAppendingString:kImage180]];
+                [iv2 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+            }else{
+                [iv2 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[1] objectForKey:@"path"]]]];
+            }
+        }
+        iv3.frame = CGRectMake(iv2.right+10, 0, (self.width-20)/3, (self.width-20)/3);
+        if (![[_pics[2] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[2] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[2] objectForKey:@"path"]];
+                urlHaha = [NSMutableString stringWithString:[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha]];
+<<<<<<< .mine
+                urlHaha = [NSMutableString stringWithString:[urlHaha stringByAppendingString:kImage180]];
+=======
+                urlHaha = [NSMutableString stringWithString:[urlHaha stringByAppendingString:@"_compression_180_180.jpeg"]];
+>>>>>>> .r11782
+                [iv3 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+            }else{
+                [iv3 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[2] objectForKey:@"path"]]]];
+            }
+        }
+    }else if (_pics.count == 4){
+        iv1.frame = CGRectMake(0, 0, (self.width-20)/3, (self.width-20)/3);
+        if (![[_pics[0] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[0] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[0] objectForKey:@"path"]];
+                urlHaha = [NSMutableString stringWithString:[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha]];
+                urlHaha = [NSMutableString stringWithString:[urlHaha stringByAppendingString:kImage180]];
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+            }else{
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[0] objectForKey:@"path"]]]];
+            }
+        }
+        iv2.frame = CGRectMake(iv1.right+10, 0, (self.width-20)/3, (self.width-20)/3);
+        if (![[_pics[1] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[1] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[1] objectForKey:@"path"]];
+                urlHaha = [NSMutableString stringWithString:[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha]];
+                urlHaha = [NSMutableString stringWithString:[urlHaha stringByAppendingString:kImage180]];
+                [iv2 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+            }else{
+                [iv2 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[1] objectForKey:@"path"]]]];
+            }
+        }
+        iv3.frame = CGRectMake(iv2.right+10, 0, (self.width-20)/3, (self.width-20)/3);
+        if (![[_pics[2] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[2] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[2] objectForKey:@"path"]];
+                urlHaha = [NSMutableString stringWithString:[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha]];
+                urlHaha = [NSMutableString stringWithString:[urlHaha stringByAppendingString:kImage180]];
+                [iv3 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+            }else{
+                [iv3 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[2] objectForKey:@"path"]]]];
+            }
+        }
+        iv4.frame = CGRectMake(0, iv2.bottom+5, (self.width-20)/3, (self.width-20)/3);
+        if (![[_pics[3] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[3] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[3] objectForKey:@"path"]];
+                urlHaha = [NSMutableString stringWithString:[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha]];
+                urlHaha = [NSMutableString stringWithString:[urlHaha stringByAppendingString:kImage180]];
+                [iv4 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+            }else{
+                [iv4 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[3] objectForKey:@"path"]]]];
+            }
+        }
+    }else if (_pics.count == 5){
+        iv1.frame = CGRectMake(0, 0, (self.width-20)/3, (self.width-20)/3);
+        if (![[_pics[0] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[0] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[0] objectForKey:@"path"]];
+                urlHaha = [NSMutableString stringWithString:[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha]];
+<<<<<<< .mine
+                urlHaha = [NSMutableString stringWithString:[urlHaha stringByAppendingString:kImage180]];
+=======
+                urlHaha = [NSMutableString stringWithString:[urlHaha stringByAppendingString:@"_compression_150_150.jpeg"]];
+>>>>>>> .r11782
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+            }else{
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[0] objectForKey:@"path"]]]];
+            }
+        }
+        iv2.frame = CGRectMake(iv1.right+10, 0, (self.width-20)/3, (self.width-20)/3);
+        if (![[_pics[1] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[1] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[1] objectForKey:@"path"]];
+                urlHaha = [NSMutableString stringWithString:[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha]];
+                urlHaha = [NSMutableString stringWithString:[urlHaha stringByAppendingString:kImage180]];
+                [iv2 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+            }else{
+                [iv2 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[1] objectForKey:@"path"]]]];
+            }
+        }
+        iv3.frame = CGRectMake(iv2.right+10, 0, (self.width-20)/3, (self.width-20)/3);
+        if (![[_pics[2] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[2] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[2] objectForKey:@"path"]];
+                urlHaha = [NSMutableString stringWithString:[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha]];
+                urlHaha = [NSMutableString stringWithString:[urlHaha stringByAppendingString:kImage180]];
+                [iv3 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+            }else{
+                [iv3 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[2] objectForKey:@"path"]]]];
+            }
+        }
+        iv4.frame = CGRectMake(0, iv2.bottom+5, (self.width-20)/3, (self.width-20)/3);
+        if (![[_pics[3] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[3] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[3] objectForKey:@"path"]];
+                urlHaha = [NSMutableString stringWithString:[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha]];
+                urlHaha = [NSMutableString stringWithString:[urlHaha stringByAppendingString:kImage180]];
+                [iv4 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+            }else{
+                [iv4 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[3] objectForKey:@"path"]]]];
+            }
+        }
+        iv5.frame = CGRectMake(iv4.right+10, iv2.bottom+5, (self.width-20)/3, (self.width-20)/3);
+        if (![[_pics[4] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[4] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[4] objectForKey:@"path"]];
+                urlHaha = [NSMutableString stringWithString:[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha]];
+                urlHaha = [NSMutableString stringWithString:[urlHaha stringByAppendingString:kImage180]];
+                [iv5 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+            }else{
+                [iv5 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[4] objectForKey:@"path"]]]];
+            }
+        }
+    }
+}
+
+@end

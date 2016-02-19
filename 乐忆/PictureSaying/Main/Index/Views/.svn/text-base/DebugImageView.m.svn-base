@@ -1,0 +1,534 @@
+//
+//  DebugImageView.m
+//  PictureSaying
+//
+//  Created by tutu on 14/12/19.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "DebugImageView.h"
+#import "UIImageView+WebCache.h"
+#import "PSConfigs.h"
+#import "NSString+Additions.h"
+#define ImageUrl @"http://192.168.1.200:8888/"
+
+@implementation DebugImageView
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+        [self _initViews];
+    }
+    return self;
+}
+
+-(void)_initViews{
+    iv1 = [[UIImageView alloc] initWithFrame:CGRectZero];
+    iv1.contentMode = UIViewContentModeScaleAspectFill;
+    iv1.clipsToBounds = YES;
+    iv2 = [[UIImageView alloc] initWithFrame:CGRectZero];
+    iv2.contentMode = UIViewContentModeScaleAspectFill;
+    iv2.clipsToBounds = YES;
+    iv3 = [[UIImageView alloc] initWithFrame:CGRectZero];
+    iv3.contentMode = UIViewContentModeScaleAspectFill;
+    iv3.clipsToBounds = YES;
+    iv4 = [[UIImageView alloc] initWithFrame:CGRectZero];
+    iv4.contentMode = UIViewContentModeScaleAspectFill;
+    iv4.clipsToBounds = YES;
+    iv5 = [[UIImageView alloc] initWithFrame:CGRectZero];
+    iv5.contentMode = UIViewContentModeScaleAspectFill;
+    iv5.clipsToBounds = YES;
+    [self addSubview:iv1];
+    [self addSubview:iv2];
+    [self addSubview:iv3];
+    [self addSubview:iv4];
+    [self addSubview:iv5];
+    
+    lab1 = [[UILabel alloc] initWithFrame:CGRectZero];
+    lab1.numberOfLines = 0;
+    lab1.font = [UIFont systemFontOfSize:16.0];
+    lab1.textColor = rgb(137, 137, 137, 1);
+    [self addSubview:lab1];
+    
+    lab2 = [[UILabel alloc] initWithFrame:CGRectZero];
+    lab2.font = [UIFont systemFontOfSize:16.0];
+    lab2.textColor = rgb(137, 137, 137, 1);
+    lab2.numberOfLines = 0;
+    [self addSubview:lab2];
+    
+    lab3 = [[UILabel alloc] initWithFrame:CGRectZero];
+    lab3.font = [UIFont systemFontOfSize:16.0];
+    lab3.textColor = rgb(137, 137, 137, 1);
+    lab3.numberOfLines = 0;
+    [self addSubview:lab3];
+    
+    lab4 = [[UILabel alloc] initWithFrame:CGRectZero];
+    lab4.font = [UIFont systemFontOfSize:16.0];
+    lab4.textColor = rgb(137, 137, 137, 1);
+    lab4.numberOfLines = 0;
+    [self addSubview:lab4];
+    
+    lab5 = [[UILabel alloc] initWithFrame:CGRectZero];
+    lab5.font = [UIFont systemFontOfSize:16.0];
+    lab5.textColor = rgb(137, 137, 137, 1);
+    lab5.numberOfLines = 0;
+    [self addSubview:lab5];
+}
+
+-(void)setPics:(NSArray *)pics{
+    if (_pics != pics) {
+        _pics = pics;
+        [self setNeedsLayout];
+    }
+}
+
+-(void)layoutSubviews{
+    [super layoutSubviews];
+    if (_pics.count == 1) {
+        iv1.frame = CGRectMake(0, 0, self.width, self.width*17/30);
+        if (![[_pics[0] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[0] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+//                NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[0] objectForKey:@"path"]];
+//                [urlHaha insertString:@"_compression_320_600" atIndex:urlHaha.length-5];
+//                NSLog(@"%@",urlHaha);
+                NSString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[0] objectForKey:@"path"]];
+                NSString *compressionString = kCompression_720;
+                if ([PSConfigs getIphoneType] <= IphoneType_6)
+                {
+                    compressionString = kCompression_720;
+                }
+                else if ([PSConfigs getIphoneType] <= IphoneType_6plus)
+                {
+                    compressionString = kCompression_1080;
+                }
+                
+               urlHaha = [[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha] stringByAppendingString:compressionString];
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+            }else{
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[0] objectForKey:@"path"]]]];
+            }
+        }
+        if (![[_pics[0] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size1 = [[_pics[0] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:16.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab1.frame = CGRectMake(0, iv1.bottom, self.width, size1.height+10);
+            lab1.text = [_pics[0] objectForKey:@"txt"];
+        }else{
+            lab1.frame = CGRectMake(0, iv1.bottom, self.width, 20);
+            lab1.text = @"";
+        }
+    }else if (_pics.count == 2){
+        iv1.frame = CGRectMake(0, 0, KScreenWidth-20, (KScreenWidth-20)*17/30);
+        if ([[_pics[0] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+//            NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[0] objectForKey:@"path"]];
+//            [urlHaha insertString:@"_compression_320_600" atIndex:urlHaha.length-5];
+            NSString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[0] objectForKey:@"path"]];
+            NSString *compressionString = kCompression_720;
+            if ([PSConfigs getIphoneType] <= IphoneType_6)
+            {
+                compressionString = kCompression_720;
+            }
+            else if ([PSConfigs getIphoneType] <= IphoneType_6plus)
+            {
+                compressionString = kCompression_1080;
+            }
+            
+            urlHaha = [[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha] stringByAppendingString:compressionString];
+            [iv1 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+        }else{
+            [iv1 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[0] objectForKey:@"path"]]]];
+        }
+        if (![[_pics[0] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size1 = [[_pics[0] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:16.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab1.frame = CGRectMake(0, iv1.bottom, self.width, size1.height+10);
+            lab1.text = [_pics[0] objectForKey:@"txt"];
+        }else{
+            lab1.frame = CGRectMake(0, iv1.bottom, self.width, 20);
+            lab1.text = @"";
+        }
+        iv2.frame = CGRectMake(0, lab1.bottom+10, KScreenWidth-20, (KScreenWidth-20)*17/30);
+        if ([[_pics[1] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+//            NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[1] objectForKey:@"path"]];
+//            [urlHaha insertString:@"_compression_320_600" atIndex:urlHaha.length-5];
+            NSString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[1] objectForKey:@"path"]];
+            NSString *compressionString = kCompression_720;
+            if ([PSConfigs getIphoneType] <= IphoneType_6)
+            {
+                compressionString = kCompression_720;
+            }
+            else if ([PSConfigs getIphoneType] <= IphoneType_6plus)
+            {
+                compressionString = kCompression_1080;
+            }
+            
+            urlHaha = [[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha] stringByAppendingString:compressionString];
+            [iv2 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+        }else{
+            [iv2 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[1] objectForKey:@"path"]]]];
+        }
+        if (![[_pics[1] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size2 = [[_pics[1] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:16.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab2.frame = CGRectMake(0, iv2.bottom, self.width, size2.height+10);
+            lab2.text = [_pics[1] objectForKey:@"txt"];
+        }else{
+            lab2.frame = CGRectMake(0, iv2.bottom, self.width, 20);
+            lab2.text = @"";
+        }
+    }else if (_pics.count == 3){
+        iv1.frame = CGRectMake(0, 0, self.width, self.width*17/30);
+        if ([[_pics[0] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+//            NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[0] objectForKey:@"path"]];
+//            [urlHaha insertString:@"_compression_320_600" atIndex:urlHaha.length-5];
+            NSString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[0] objectForKey:@"path"]];
+            NSString *compressionString = kCompression_720;
+            if ([PSConfigs getIphoneType] <= IphoneType_6)
+            {
+                compressionString = kCompression_720;
+            }
+            else if ([PSConfigs getIphoneType] <= IphoneType_6plus)
+            {
+                compressionString = kCompression_1080;
+            }
+            
+            urlHaha = [[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha] stringByAppendingString:compressionString];
+            [iv1 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+        }else{
+            [iv1 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[0] objectForKey:@"path"]]]];
+        }
+        if (![[_pics[0] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size1 = [[_pics[0] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:16.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab1.frame = CGRectMake(0, iv1.bottom, self.width, size1.height+10);
+            lab1.text = [_pics[0] objectForKey:@"txt"];
+        }else{
+            lab1.frame = CGRectMake(0, iv1.bottom, self.width, 20);
+            lab1.text = @"";
+        }
+        iv2.frame = CGRectMake(0, lab1.bottom+10, self.width, self.width*17/30);
+        if ([[_pics[1] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+//            NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[1] objectForKey:@"path"]];
+//            [urlHaha insertString:@"_compression_320_600" atIndex:urlHaha.length-5];
+            NSString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[1] objectForKey:@"path"]];
+            NSString *compressionString = kCompression_720;
+            if ([PSConfigs getIphoneType] <= IphoneType_6)
+            {
+                compressionString = kCompression_720;
+            }
+            else if ([PSConfigs getIphoneType] <= IphoneType_6plus)
+            {
+                compressionString = kCompression_1080;
+            }
+            
+            urlHaha = [[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha] stringByAppendingString:compressionString];
+            [iv2 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+        }else{
+            [iv2 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[1] objectForKey:@"path"]]]];
+        }
+        if (![[_pics[1] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size2 = [[_pics[1] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:16.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab2.frame = CGRectMake(0, iv2.bottom, self.width, size2.height+10);
+            lab2.text = [_pics[1] objectForKey:@"txt"];
+
+        }else{
+            lab2.frame = CGRectMake(0, iv2.bottom, self.width, 20);
+            lab2.text = @"";
+        }
+        
+        iv3.frame = CGRectMake(0, lab2.bottom+10, self.width, self.width*17/30);
+        if ([[_pics[2] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+//            NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[2] objectForKey:@"path"]];
+//            [urlHaha insertString:@"_compression_320_600" atIndex:urlHaha.length-5];
+            NSString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[2] objectForKey:@"path"]];
+            NSString *compressionString = kCompression_720;
+            if ([PSConfigs getIphoneType] <= IphoneType_6)
+            {
+                compressionString = kCompression_720;
+            }
+            else if ([PSConfigs getIphoneType] <= IphoneType_6plus)
+            {
+                compressionString = kCompression_1080;
+            }
+            
+            urlHaha = [[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha] stringByAppendingString:compressionString];
+            [iv3 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+        }else{
+            [iv3 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[2] objectForKey:@"path"]]]];
+        }
+        if (![[_pics[2] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size3 = [[_pics[2] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:16.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab3.frame = CGRectMake(0, iv3.bottom, self.width, size3.height+10);
+            lab3.text = [_pics[2] objectForKey:@"txt"];
+            
+        }else{
+            lab3.frame = CGRectMake(0, iv3.bottom, self.width, 20);
+            lab3.text = @"";
+        }
+    }else if (_pics.count == 4){
+        iv1.frame = CGRectMake(0, 0, self.width, self.width*17/30);
+        if ([[_pics[0] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+//            NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[0] objectForKey:@"path"]];
+//            [urlHaha insertString:@"_compression_320_600" atIndex:urlHaha.length-5];
+            NSString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[0] objectForKey:@"path"]];
+            NSString *compressionString = kCompression_720;
+            if ([PSConfigs getIphoneType] <= IphoneType_6)
+            {
+                compressionString = kCompression_720;
+            }
+            else if ([PSConfigs getIphoneType] <= IphoneType_6plus)
+            {
+                compressionString = kCompression_1080;
+            }
+            
+            urlHaha = [[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha] stringByAppendingString:compressionString];
+            [iv1 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+        }else{
+            [iv1 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[0] objectForKey:@"path"]]]];
+        }
+        if (![[_pics[0] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size1 = [[_pics[0] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:16.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab1.frame = CGRectMake(0, iv1.bottom, self.width, size1.height+10);
+            lab1.text = [_pics[0] objectForKey:@"txt"];
+            
+        }else{
+            lab1.frame = CGRectMake(0, iv1.bottom, self.width, 20);
+            lab1.text = @"";
+        }
+        iv2.frame = CGRectMake(0, lab1.bottom+10, self.width, self.width*17/30);
+        if ([[_pics[1] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+//            NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[1] objectForKey:@"path"]];
+//            [urlHaha insertString:@"_compression_320_600" atIndex:urlHaha.length-5];
+            NSString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[1] objectForKey:@"path"]];
+            NSString *compressionString = kCompression_720;
+            if ([PSConfigs getIphoneType] <= IphoneType_6)
+            {
+                compressionString = kCompression_720;
+            }
+            else if ([PSConfigs getIphoneType] <= IphoneType_6plus)
+            {
+                compressionString = kCompression_1080;
+            }
+            
+            urlHaha = [[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha] stringByAppendingString:compressionString];
+            [iv2 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+        }else{
+            [iv2 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[1] objectForKey:@"path"]]]];
+        }
+        if (![[_pics[1] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size2 = [[_pics[1] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:16.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab2.frame = CGRectMake(0, iv2.bottom, self.width, size2.height+10);
+            lab2.text = [_pics[1] objectForKey:@"txt"];
+            
+        }else{
+            lab2.frame = CGRectMake(0, iv2.bottom, self.width, 20);
+            lab2.text = @"";
+        }
+        iv3.frame = CGRectMake(0, lab2.bottom+10, self.width, self.width*17/30);
+        if ([[_pics[2] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+
+//            NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[2] objectForKey:@"path"]];
+//            [urlHaha insertString:@"_compression_320_600" atIndex:urlHaha.length-5];
+            NSString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[2] objectForKey:@"path"]];
+            NSString *compressionString = kCompression_720;
+            if ([PSConfigs getIphoneType] <= IphoneType_6)
+            {
+                compressionString = kCompression_720;
+            }
+            else if ([PSConfigs getIphoneType] <= IphoneType_6plus)
+            {
+                compressionString = kCompression_1080;
+            }
+            
+            urlHaha = [[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha] stringByAppendingString:compressionString];
+            [iv3 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+        }else{
+            [iv3 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[2] objectForKey:@"path"]]]];
+        }
+        if (![[_pics[2] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size3 = [[_pics[2] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:16.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab3.frame = CGRectMake(0, iv3.bottom, self.width, size3.height+10);
+            lab3.text = [_pics[2] objectForKey:@"txt"];
+            
+        }else{
+            lab3.frame = CGRectMake(0, iv3.bottom, self.width, 20);
+            lab3.text = @"";
+        }
+        iv4.frame = CGRectMake(0, lab3.bottom+10, self.width, self.width*17/30);
+        if ([[_pics[3] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+//            NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[3] objectForKey:@"path"]];
+//            [urlHaha insertString:@"_compression_320_600" atIndex:urlHaha.length-5];
+            NSString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[3] objectForKey:@"path"]];
+            NSString *compressionString = kCompression_720;
+            if ([PSConfigs getIphoneType] <= IphoneType_6)
+            {
+                compressionString = kCompression_720;
+            }
+            else if ([PSConfigs getIphoneType] <= IphoneType_6plus)
+            {
+                compressionString = kCompression_1080;
+            }
+            
+            urlHaha = [[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha] stringByAppendingString:compressionString];
+            [iv4 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+        }else{
+            [iv4 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[3] objectForKey:@"path"]]]];
+        }
+        if (![[_pics[3] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size4 = [[_pics[3] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:16.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab4.frame = CGRectMake(0, iv4.bottom, self.width, size4.height+10);
+            lab4.text = [_pics[3] objectForKey:@"txt"];
+            
+        }else{
+            lab4.frame = CGRectMake(0, iv4.bottom, self.width, 20);
+            lab4.text = @"";
+        }
+    }else if (_pics.count == 5){
+        iv1.frame = CGRectMake(0, 0, self.width, self.width*17/30);
+        if (![[_pics[0] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[0] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+//                NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[0] objectForKey:@"path"]];
+//                [urlHaha insertString:@"_compression_320_600" atIndex:urlHaha.length-5];
+                NSString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[0] objectForKey:@"path"]];
+                NSString *compressionString = kCompression_720;
+                if ([PSConfigs getIphoneType] <= IphoneType_6)
+                {
+                    compressionString = kCompression_720;
+                }
+                else if ([PSConfigs getIphoneType] <= IphoneType_6plus)
+                {
+                    compressionString = kCompression_1080;
+                }
+                
+                urlHaha = [[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha] stringByAppendingString:compressionString];
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+            }else{
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[0] objectForKey:@"path"]]]];
+            }
+        }
+        if (![[_pics[0] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size1 = [[_pics[0] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:16.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab1.frame = CGRectMake(0, iv1.bottom, self.width, size1.height+10);
+            lab1.text = [_pics[0] objectForKey:@"txt"];
+            
+        }else{
+            lab1.frame = CGRectMake(0, iv1.bottom, self.width, 20);
+            lab1.text = @"";
+        }
+        iv2.frame = CGRectMake(0, lab1.bottom+10, self.width, self.width*17/30);
+        if ([[_pics[1] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+//            NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[1] objectForKey:@"path"]];
+//            [urlHaha insertString:@"_compression_320_600" atIndex:urlHaha.length-5];
+            NSString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[1] objectForKey:@"path"]];
+            NSString *compressionString = kCompression_720;
+            if ([PSConfigs getIphoneType] <= IphoneType_6)
+            {
+                compressionString = kCompression_720;
+            }
+            else if ([PSConfigs getIphoneType] <= IphoneType_6plus)
+            {
+                compressionString = kCompression_1080;
+            }
+            
+            urlHaha = [[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha] stringByAppendingString:compressionString];
+            [iv2 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+        }else{
+            [iv2 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[1] objectForKey:@"path"]]]];
+        }
+        if (![[_pics[1] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size2 = [[_pics[1] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:16.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab2.frame = CGRectMake(0, iv2.bottom, self.width, size2.height+10);
+            lab2.text = [_pics[1] objectForKey:@"txt"];
+            
+        }else{
+            lab2.frame = CGRectMake(0, iv2.bottom, self.width, 20);
+            lab2.text = @"";
+        }
+        iv3.frame = CGRectMake(0, lab2.bottom+10, self.width, self.width*17/30);
+        if ([[_pics[2] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+//            NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[2] objectForKey:@"path"]];
+//            [urlHaha insertString:@"_compression_320_600" atIndex:urlHaha.length-5];
+            NSString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[2] objectForKey:@"path"]];
+            NSString *compressionString = kCompression_720;
+            if ([PSConfigs getIphoneType] <= IphoneType_6)
+            {
+                compressionString = kCompression_720;
+            }
+            else if ([PSConfigs getIphoneType] <= IphoneType_6plus)
+            {
+                compressionString = kCompression_1080;
+            }
+            
+            urlHaha = [[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha] stringByAppendingString:compressionString];
+            [iv3 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+        }else{
+            [iv3 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[2] objectForKey:@"path"]]]];
+        }
+        if (![[_pics[2] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size3 = [[_pics[2] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:16.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab3.frame = CGRectMake(0, iv3.bottom, self.width, size3.height+10);
+            lab3.text = [_pics[2] objectForKey:@"txt"];
+            
+        }else{
+            lab3.frame = CGRectMake(0, iv3.bottom, self.width, 20);
+            lab3.text = @"";
+        }
+        iv4.frame = CGRectMake(0, lab3.bottom+10, self.width, self.width*17/30);
+        if ([[_pics[3] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+//            NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[3] objectForKey:@"path"]];
+//            [urlHaha insertString:@"_compression_320_600" atIndex:urlHaha.length-5];
+            NSString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[3] objectForKey:@"path"]];
+            NSString *compressionString = kCompression_720;
+            if ([PSConfigs getIphoneType] <= IphoneType_6)
+            {
+                compressionString = kCompression_720;
+            }
+            else if ([PSConfigs getIphoneType] <= IphoneType_6plus)
+            {
+                compressionString = kCompression_1080;
+            }
+            
+            urlHaha = [[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha] stringByAppendingString:compressionString];
+            [iv4 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+        }else{
+            [iv4 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[3] objectForKey:@"path"]]]];
+        }
+        if (![[_pics[3] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size4 = [[_pics[3] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:16.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab4.frame = CGRectMake(0, iv4.bottom, self.width, size4.height+10);
+            lab4.text = [_pics[3] objectForKey:@"txt"];
+            
+        }else{
+            lab4.frame = CGRectMake(0, iv4.bottom, self.width, 20);
+            lab4.text = @"";
+        }
+        iv5.frame = CGRectMake(0, lab4.bottom+10, self.width, self.width*17/30);
+        if ([[_pics[4] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+//            NSMutableString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[4] objectForKey:@"path"]];
+//            [urlHaha insertString:@"_compression_320_600" atIndex:urlHaha.length-5];
+            NSString *urlHaha = [[NSMutableString alloc] initWithString:[_pics[4] objectForKey:@"path"]];
+            NSString *compressionString = kCompression_720;
+            if ([PSConfigs getIphoneType] <= IphoneType_6)
+            {
+                compressionString = kCompression_720;
+            }
+            else if ([PSConfigs getIphoneType] <= IphoneType_6plus)
+            {
+                compressionString = kCompression_1080;
+            }
+            
+            urlHaha = [[PSConfigs getImageUrlPrefixWithSourcePath:urlHaha] stringByAppendingString:compressionString];
+            [iv5 sd_setImageWithURL:[NSURL URLWithString:urlHaha]];
+        }else{
+            [iv5 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[4] objectForKey:@"path"]]]];
+        }
+        if (![[_pics[4] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size5 = [[_pics[4] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:16.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab5.frame = CGRectMake(0, iv5.bottom, self.width, size5.height+10);
+            lab5.text = [_pics[4] objectForKey:@"txt"];
+        }else{
+            lab5.frame = CGRectMake(0, iv4.bottom, self.width, 20);
+            lab5.text = @"";
+        }
+        
+    }
+}
+@end

@@ -1,0 +1,27 @@
+//
+//  groupTableViewCell.h
+//  FamilyAlbum
+//
+//  Created by tutu on 14/12/18.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface groupTableViewCell : UITableViewCell<UIAlertViewDelegate>
+{
+    UIButton *btn;
+    NSDictionary *dic11;
+    NSMutableDictionary *d1;
+    NSMutableDictionary *d2;
+    NSMutableDictionary *add;
+    NSMutableDictionary *dshareid;
+   
+}
+@property(nonatomic,strong)NSMutableArray *a;
+@property(nonatomic,strong)NSMutableDictionary *dic;
+@property(nonatomic)NSInteger row;
+@property(nonatomic,strong)UILabel *label;
+@property(nonatomic,copy)NSString *isInvite;
+-(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier withArray:(NSArray *)arr withId:(NSString *)myId;
+@end

@@ -1,0 +1,40 @@
+//
+//  IndexModel.m
+//  PictureSaying
+//
+//  Created by tutu on 14/12/3.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "IndexModel.h"
+
+@implementation IndexModel
+
+-(void)setAttributes:(NSDictionary *)jsonDic{
+    [super setAttributes:jsonDic];
+    self.sid = [jsonDic objectForKey:@"id"];
+//    NSDate *time = [jsonDic objectForKey:@"time"];
+//    NSDateFormatter *f = [[NSDateFormatter alloc] init];
+//    [f setDateFormat:@"yyyy-MM-dd"];
+//    if (![time isKindOfClass:[NSNull class]]) {
+//        NSString *regStr = [f stringFromDate:time];
+//        self.time = regStr;
+//    }
+    //@"yyyy-MM-dd HH:mm:ss"
+    
+    NSString *time = [jsonDic objectForKey:@"time"];
+    if (![time isKindOfClass:[NSNull class]]) {
+        self.originalTime = [jsonDic objectForKey:@"time"];
+        NSDateFormatter *formatter1 = [[NSDateFormatter alloc] init];
+        [formatter1 setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+        NSDate *date = [formatter1 dateFromString:time];
+        NSDateFormatter *formatter2 = [[NSDateFormatter alloc] init];
+        [formatter2 setDateFormat:@"yyyy-MM-dd"];
+        NSString *dateStr = [formatter2 stringFromDate:date];
+        self.time = dateStr;
+    }
+    
+    
+}
+
+@end

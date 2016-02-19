@@ -1,0 +1,86 @@
+//
+//  BigPicViewController.m
+//  PictureSaying
+//
+//  Created by tutu on 15/1/4.
+//  Copyright (c) 2015年 tutu. All rights reserved.
+//
+
+#import "BigPicViewController.h"
+#import "PhotoCollectionView.h"
+
+@interface BigPicViewController ()
+
+@end
+
+@implementation BigPicViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+        self.title = @"图片浏览";
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    [self setNaviItem];
+    self.view.backgroundColor = [UIColor colorWithRed:251/255.0 green:248/255.0 blue:241/255.0 alpha:1.0];
+    NSInteger height = ios7?0:0;
+    PhotoCollectionView *photoCV = [[PhotoCollectionView alloc] initWithFrame:CGRectMake(0, height, KScreenWidth, KScreenHeight-64)];
+    [self.view addSubview:photoCV];
+    
+    photoCV.urlsArr = self.urlsArr;
+    [photoCV scrollToItemAtIndexPath:self.indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
+    self.title = [NSString stringWithFormat:@"%d/%d",self.indexPath.row+1,self.urlsArr.count];
+}
+
+-(void)setNaviItem{
+    UIButton *leftBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    leftBtn.frame = CGRectMake(0, 0, 48, 20);
+    leftBtn.showsTouchWhenHighlighted = YES;
+    [leftBtn setImage:[UIImage imageNamed:@"back"] forState:UIControlStateNormal];
+    [leftBtn addTarget:self action:@selector(leftAction:) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:leftBtn];
+}
+
+-(void)leftAction:(UIButton *)btn{
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)showOrHiddenNavigationBarAndStatusBar{
+    if (ios7) {
+        /*在ios7上
+         setNeedsStatusBarAppearanceUpdate:刷新状态栏的显示
+         此方法会触发调用当前控制器的
+         - (BOOL)prefersStatusBarHidden 显示/隐藏电池条
+         - (UIStatusBarStyle)preferredStatusBarStyle方法，
+         */
+        [self setNeedsStatusBarAppearanceUpdate];
+    }
+    
+    [[UIApplication sharedApplication]setStatusBarHidden:NO animated:NO];
+    self.navigationController.navigationBarHidden = NO;
+}
+
+-(UIStatusBarStyle)preferredStatusBarStyle{
+    return UIStatusBarStyleLightContent;
+}
+
+-(BOOL)prefersStatusBarHidden{
+    return self.navigationController.navigationBarHidden;
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+
+@end

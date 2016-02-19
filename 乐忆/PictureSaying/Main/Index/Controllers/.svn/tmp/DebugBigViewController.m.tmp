@@ -1,0 +1,431 @@
+//
+//  DebugBigViewController.m
+//  PictureSaying
+//
+//  Created by tutu on 14/12/19.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "DebugBigViewController.h"
+#import "StoryDetailViewController.h"
+#import "DebugBigCell.h"
+#import "CommentViewController.h"
+#import "UIView+Additions.h"
+#import "PSConfigs.h"
+@interface DebugBigViewController ()<BaseTableViewDelegate>
+
+@end
+
+@implementation DebugBigViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    self.title = @"故事详情";
+    [self _initViews];
+    
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(likeStatusRefresh:) name:kPSLikeStatusChangeNotification object:nil];
+    
+    tipNullLabel = [[UILabel alloc] initWithFrame:CGRectMake((KScreenWidth-200)/2, KScreenHeight+50, 200, 30)];
+    tipNullLabel.backgroundColor = [UIColor blackColor];
+    tipNullLabel.textAlignment = 1;
+    tipNullLabel.font = [UIFont systemFontOfSize:16.0];
+    tipNullLabel.textColor = [UIColor whiteColor];
+    tipNullLabel.layer.cornerRadius = 5;
+    tipNullLabel.layer.masksToBounds = YES;
+    [self.view addSubview:tipNullLabel];
+    self.Data = [NSMutableArray array];
+    if (![_isUser isEqualToString:@"1"]) {
+        [self _createNavItem];
+    }
+    [self showHud:@"精彩马上开始..."];
+    NSData *tempUserData = [[NSUserDefaults standardUserDefaults] objectForKey:@"MyUserInfo"];
+    NSDictionary *tempDic = [NSJSONSerialization JSONObjectWithData:tempUserData options:NSJSONReadingMutableContainers error:nil];
+    NSLog(@"UserInfo ---------- %@",tempDic);
+    NSString *eventUrl;
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    [params setObject:[tempDic objectForKey:@"usn"] forKey:@"accountUsn"];
+//    if (self.model.sid.length>0) {
+//        eventUrl = [NSString stringWithFormat:@"/WeiXiaoStory/api/v1/story/%@/item/0/15",self.model.sid];
+//    }else{
+//        eventUrl = [NSString stringWithFormat:@"/WeiXiaoStory/api/v1/story/%@/item/0/15",self.model.storyId];
+//    }
+    eventUrl = [NSString stringWithFormat:@"/WeiXiaoStory/api/v1/story/%@/item/0/15",self.eModel.storyId];
+    [DataService requestWithURL:eventUrl params:params httpMethod:@"GET" block1:^(id result) {
+        NSArray *tempArray = (NSArray *)result;
+        NSLog(@"事件111%@",tempArray);
+        if (tempArray.count>0) {
+            NSMutableArray *array = [NSMutableArray array];
+            for (NSDictionary *dic in tempArray) {
+                EventModel *model = [[EventModel alloc] initContentWithDic:dic];
+                [array addObject:model];
+            }
+            if (array.count>0) {
+                EventModel *MMM = array[0];
+                UIView *toolV = [self.view viewWithTag:180];
+                UILabel *zanLabel = (UILabel *)[toolV viewWithTag:190];
+                UILabel *commentLabel = (UILabel *)[toolV viewWithTag:195];
+                UIButton *zanButton = (UIButton *)[toolV viewWithTag:200];
+                zanLabel.text = MMM.favNum;
+                commentLabel.text = MMM.commentNum;
+                if ([MMM.isZan isEqualToString:@"0"]) {
+                    zanButton.selected = YES;
+                }else{
+                    zanButton.selected = NO;
+                }
+            }
+            self.Data = array;
+            _scrollView.data = self.Data;
+            [_scrollView reloadData];
+            
+        }else{
+            tipNullLabel.hidden = NO;
+            [UIView transitionWithView:self.view duration:1.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+                tipNullLabel.text = @"该故事还没有任何事件~";
+                CGRect rect = tipNullLabel.frame;
+                rect.origin.y = KScreenHeight-180;
+                tipNullLabel.frame = rect;
+            } completion:nil];
+            [self performSelector:@selector(hideTip) withObject:nil afterDelay:2];
+        }
+        [self hideHud];
+    } failLoad:^(id result) {
+        
+    }];
+    
+}
+
+-(void)hideTip{
+    [UIView animateWithDuration:1.0 animations:^{
+        tipNullLabel.hidden = YES;
+    }];
+}
+
+-(void)_createNavItem{
+    UIButton *rightButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    rightButton.frame = CGRectMake(0, 0, 60, 44);
+    rightButton.titleEdgeInsets = UIEdgeInsetsMake(0, 20, 0, 0);
+    [rightButton setImage:[UIImage imageNamed:@"changeicon"] forState:UIControlStateNormal];
+    [rightButton addTarget:self action:@selector(rightItemAction:) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *rightItem = [[UIBarButtonItem alloc] initWithCustomView:rightButton];
+    self.navigationItem.rightBarButtonItem = rightItem;
+}
+
+-(void)rightItemAction:(UIButton *)btn{
+    NSLog(@"点击了翻转按钮");
+    StoryDetailViewController *storyDetailVC = [[StoryDetailViewController alloc] init];
+    storyDetailVC.model = self.model;
+    storyDetailVC.writable = @"no";
+    [self.navigationController pushViewController:storyDetailVC animated:YES];
+    //    [[NSNotificationCenter defaultCenter]postNotificationName:@"push" object:nil];
+}
+
+-(void)_initViews{
+    _scrollView = [[StoryBigTableView alloc] initWithFrame:CGRectMake(0, 64, KScreenHeight-64-50, KScreenWidth)];
+    _scrollView.refreshDelegate = self;
+    
+    _scrollView.pagingEnabled = YES;
+    _scrollView.transform = CGAffineTransformMakeRotation(-M_PI / 2);
+    _scrollView.center = CGPointMake(KScreenWidth/2, (KScreenHeight-64-50)/2+64);
+
+    _scrollView.backgroundColor = rgb(241, 241, 241, 1);
+    _scrollView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    [self.view addSubview:_scrollView];
+    
+    UIView *toolView = [[UIView alloc] initWithFrame:CGRectMake(0, KScreenHeight-64-50, KScreenWidth, 50)];
+    toolView.tag = 180;
+    toolView.backgroundColor = [UIColor blackColor];
+    toolView.userInteractionEnabled = YES;
+    [self.view addSubview:toolView];
+    
+    UIImageView *flipIV = [[UIImageView alloc] initWithFrame:CGRectMake((KScreenWidth-20)/2, KScreenHeight-50-64-40, 25, 25)];
+    flipIV.image = [UIImage imageNamed:@"uparrow"];
+    [self.view addSubview:flipIV];
+    
+    UIButton *zanButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    zanButton.frame = CGRectMake(15, 12, 25, 25);
+    zanButton.tag = 200;
+    [zanButton setImage:[UIImage imageNamed:@"gray"] forState:UIControlStateNormal];
+    [zanButton setImage:[UIImage imageNamed:@"red"] forState:UIControlStateSelected];
+    [zanButton addTarget:self action:@selector(zanAction:) forControlEvents:UIControlEventTouchUpInside];
+    [toolView addSubview:zanButton];
+    
+    UILabel *zanCountLabel = [[UILabel alloc] initWithFrame:CGRectMake(zanButton.right+10, zanButton.top, 50, 25)];
+    zanCountLabel.font = [UIFont systemFontOfSize:16.0];
+    zanCountLabel.textColor = rgb(137, 137, 137, 1);
+    zanCountLabel.text = @"250";
+    zanCountLabel.tag = 190;
+    [toolView addSubview:zanCountLabel];
+    
+    UIButton *commentButton = [UIButton buttonWithType:UIButtonTypeCustom];
+//    commentButton.backgroundColor = [UIColor redColor];
+    commentButton.frame = CGRectMake(zanCountLabel.right, zanCountLabel.top, 35, 35);
+    [commentButton setCenter_y:zanCountLabel.center.y];
+    [commentButton setImage:[UIImage imageNamed:@"评论"] forState:UIControlStateNormal];
+    [commentButton addTarget:self action:@selector(commentAction:) forControlEvents:UIControlEventTouchUpInside];
+    [toolView addSubview:commentButton];
+    
+    UILabel *commentCountLabel = [[UILabel alloc] initWithFrame:CGRectMake(commentButton.right+10, zanButton.top, 50, 25)];
+    commentCountLabel.font = [UIFont systemFontOfSize:16.0];
+    commentCountLabel.textColor = rgb(137, 137, 137, 1);
+    commentCountLabel.text = @"500";
+    commentCountLabel.tag = 195;
+    [toolView addSubview:commentCountLabel];
+    
+    UIButton *shareButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    shareButton.frame = CGRectMake(KScreenWidth-45, zanButton.top, 25, 25);
+    [shareButton setImage:[UIImage imageNamed:@"分享"] forState:UIControlStateNormal];
+    [shareButton addTarget:self action:@selector(shareAction:) forControlEvents:UIControlEventTouchUpInside];
+    [toolView addSubview:shareButton];
+}
+
+-(void)zanAction:(UIButton *)btn{
+    NSLog(@"StoryBig:点击了赞按钮");
+    NSArray *visibleCells = _scrollView.visibleCells;
+    NSData *tempUserData = [[NSUserDefaults standardUserDefaults] objectForKey:@"MyUserInfo"];
+    NSDictionary *tempDic = [NSJSONSerialization JSONObjectWithData:tempUserData options:NSJSONReadingMutableContainers error:nil];
+    NSLog(@"UserInfo ---------- %@",tempDic);
+    if (visibleCells.count>0) {
+       DebugBigCell *bigCell = visibleCells[0];
+        UIView *toolV = [self.view viewWithTag:180];
+        UILabel *zanLabel = (UILabel *)[toolV viewWithTag:190];
+//        UILabel *commentLabel = (UILabel *)[toolV viewWithTag:195];
+        UIButton *zanButton = (UIButton *)[toolV viewWithTag:200];
+        
+        
+        [[PSConfigs shareConfigs] likeActionWithType:likeType_Event withZanButton:zanButton withZanLabel:zanLabel withIndexModel:_model withEventModel:bigCell.model];
+//        if ([bigCell.model.isZan isEqualToString:@"0"]) {
+//            NSInteger zanCount = [zanLabel.text integerValue];
+//            zanLabel.text = [NSString stringWithFormat:@"%d",zanCount-1];
+//            bigCell.model.favNum = [NSString stringWithFormat:@"%d",zanCount-1];
+//            zanButton.selected = NO;
+//            bigCell.model.isZan = @"-1";
+//            NSString *storyUrl = [NSString stringWithFormat:@"/WeiXiaoFavOrHat/api/v1/story/%@/item/%@/fav/%@/del",bigCell.storyId,bigCell.model.eventId,[tempDic objectForKey:@"usn"]];
+//            [DataService requestWithURL:storyUrl params:nil httpMethod:@"POST" block:^(id result) {
+//                NSLog(@"呜呜~他不爱我%@",result);
+//            }];
+//        }else{
+//            NSInteger zanCount = [zanLabel.text integerValue];
+//            zanLabel.text = [NSString stringWithFormat:@"%d",zanCount+1];
+//            bigCell.model.favNum = [NSString stringWithFormat:@"%d",zanCount+1];
+//            zanButton.selected = YES;
+//            bigCell.model.isZan = @"0";
+//            NSMutableDictionary *params = [NSMutableDictionary dictionary];
+//            [params setObject:[tempDic objectForKey:@"usn"] forKey:@"accountUsn"];
+//            NSString *storyUrl = [NSString stringWithFormat:@"/WeiXiaoFavOrHat/api/v1/story/%@/item/%@/fav",bigCell.storyId,bigCell.model.eventId];
+//            [DataService requestWithURL:storyUrl params:params httpMethod:@"POST" block:^(id result) {
+//                NSLog(@"有人点赞啦%@",result);
+//            }];
+//        }
+    }
+}
+
+-(void)backAction{
+    
+    if (self.navigationController.viewControllers.count>2) {
+        [self.navigationController popViewControllerAnimated:YES];
+    }else if(self.navigationController.viewControllers.count == 2){
+        [self.navigationController popViewControllerAnimated:YES];
+        [[NSNotificationCenter defaultCenter]postNotificationName:@"back" object:nil];
+    }else{
+        [self dismissViewControllerAnimated:YES completion:^{
+            
+        }];
+    }
+}
+
+-(void)commentAction:(UIButton *)btn{
+    NSLog(@"StoryBig:点击了评论按钮");
+    CommentViewController *myEventComment = [[CommentViewController alloc] init];
+    myEventComment.delegate = self;
+    if (self.model.sid.length>0) {
+        myEventComment.storyId = self.model.sid;
+    }else{
+        myEventComment.storyId = self.model.storyId;
+    }
+    myEventComment.eventId = self.eModel.eventId;
+    myEventComment.emodel = self.eModel;
+    [self.navigationController pushViewController:myEventComment animated:YES];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"push" object:nil];
+}
+
+-(void)shareAction:(UIButton *)btn{
+    NSLog(@"StoryBig:点击了分享按钮");
+    [PSConfigs shareConfigs].sid = self.eModel.eventId;
+    [PSConfigs shareConfigs].image = [self.eModel.pics[0] objectForKey:@"path"];
+    [PSConfigs shareConfigs].title = self.eModel.title;
+    [[PSConfigs shareConfigs] shareActionWithFromViewController:self ];
+    
+}
+
+-(void)commentCountRefresh
+{
+    
+    UIView *toolV = [self.view viewWithTag:180];
+    UILabel *commentLabel = (UILabel *)[toolV viewWithTag:195];
+    commentLabel.text = self.eModel.commentNum;
+
+}
+
+-(void)likeStatusRefresh:(NSNotification *)noti
+{
+    NSArray *array = noti.object;
+    if (array.count == 3)
+    {
+        IndexModel *indexModel = array[0];
+        EventModel *eventModel = array[1];
+        enum likeType type = [array[2] intValue];
+        
+        UIView *toolV = [self.view viewWithTag:180];
+        UILabel *zanLabel = (UILabel *)[toolV viewWithTag:190];
+        UIButton *zanButton = (UIButton *)[toolV viewWithTag:200];
+        
+        switch (type)
+        {
+            case likeType_Story:
+            {
+                zanLabel.text = indexModel.zanCount;
+                zanButton.selected = [indexModel.isZan isEqualToString:@"0"];
+            }
+                break;
+            case likeType_Event:
+            {
+                zanLabel.text = eventModel.favNum;
+                zanButton.selected = [eventModel.isZan isEqualToString:@"0"];
+            }
+                break;
+                
+            default:
+                break;
+        }
+    }
+}
+
+#pragma mark - BaseTableViewDelegate
+-(void)pullDone:(BaseTableView *)tableView{
+    //newest
+    [self _loadNewData];
+}
+
+-(void)_loadNewData{
+    NSString *eventUrl;
+    if (self.model.sid.length>0) {
+        eventUrl = [NSString stringWithFormat:@"/WeiXiaoStory/api/v1/story/%@/item/0/15",self.model.sid];
+    }else{
+        eventUrl = [NSString stringWithFormat:@"/WeiXiaoStory/api/v1/story/%@/item/0/15",self.model.storyId];
+    }
+    NSData *tempUserData = [[NSUserDefaults standardUserDefaults] objectForKey:@"MyUserInfo"];
+    NSDictionary *tempDic = [NSJSONSerialization JSONObjectWithData:tempUserData options:NSJSONReadingMutableContainers error:nil];
+    NSLog(@"UserInfo ---------- %@",tempDic);
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    [params setObject:[tempDic objectForKey:@"usn"] forKey:@"accountUsn"];
+    [DataService requestWithURL:eventUrl params:params httpMethod:@"GET" block1:^(id result) {
+        NSArray *tempArray = (NSArray *)result;
+        if (tempArray.count>0) {
+            
+            NSLog(@"事件111%@",tempArray);
+            NSMutableArray *array = [NSMutableArray array];
+            for (NSDictionary *dic in tempArray) {
+                EventModel *model = [[EventModel alloc] initContentWithDic:dic];
+                [array addObject:model];
+                //            model.isZan = @"-1";
+            }
+            self.Data = array;
+            _scrollView.data = self.Data;
+            [_scrollView reloadData];
+            tipNullLabel.hidden = NO;
+            [UIView transitionWithView:self.view duration:1.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+                tipNullLabel.text = @"已经是最新的啦~";
+                CGRect rect = tipNullLabel.frame;
+                rect.origin.y = KScreenHeight-180;
+                tipNullLabel.frame = rect;
+            } completion:nil];
+            [self performSelector:@selector(hideTip) withObject:nil afterDelay:2];
+        }else{
+            tipNullLabel.hidden = NO;
+            [UIView transitionWithView:self.view duration:1.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+                tipNullLabel.text = @"该故事还没有任何事件~";
+                CGRect rect = tipNullLabel.frame;
+                rect.origin.y = KScreenHeight-180;
+                tipNullLabel.frame = rect;
+            } completion:nil];
+            [self performSelector:@selector(hideTip) withObject:nil afterDelay:2];
+        }
+        [self hiddenHeaderRefresh:_scrollView];
+    } failLoad:^(id result) {
+        
+    }];
+}
+
+-(void)pullUp:(BaseTableView *)tableView{
+    //newest
+    [self _loadOldData];
+}
+
+-(void)_loadOldData{
+    NSMutableDictionary *params1 = [NSMutableDictionary dictionary];
+    NSString *eventUrl;
+    if (self.model.sid.length>0) {
+        eventUrl = [NSString stringWithFormat:@"/WeiXiaoStory/api/v1/story/%@/item/%d/%d",self.model.sid,self.Data.count,self.Data.count+15];
+    }else{
+        eventUrl = [NSString stringWithFormat:@"/WeiXiaoStory/api/v1/story/%@/item/%d/%d",self.model.storyId,self.Data.count,self.Data.count+15];
+    }
+    [DataService requestWithURL:eventUrl params:params1 httpMethod:@"GET" block1:^(id result) {
+        NSLog(@"最新的:%@",result);
+        NSArray *array = (NSArray *)result;
+        NSMutableArray *oldData = [NSMutableArray array];
+        for (int i = 0;i<array.count;i++) {
+            NSDictionary *dic = array[i];
+            EventModel *model = [[EventModel alloc] initContentWithDic:dic];
+            [oldData addObject:model];
+        }
+        [self.Data addObjectsFromArray:oldData];
+        
+        _scrollView.data = _Data;
+        [_scrollView reloadData];
+        if (oldData.count<15) {
+            tipNullLabel.hidden = NO;
+            [UIView transitionWithView:self.view duration:1.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+                tipNullLabel.text = @"已经到底啦~";
+                CGRect rect = tipNullLabel.frame;
+                rect.origin.y = KScreenHeight-180;
+                tipNullLabel.frame = rect;
+            } completion:nil];
+            [self performSelector:@selector(hideTip) withObject:nil afterDelay:2];
+        }
+        [self hiddenFooterRefresh:_scrollView];
+    } failLoad:^(id result) {
+        
+    }];
+}
+
+-(void)hiddenHeaderRefresh:(StoryBigTableView *)tv{
+    [tv doneLoadingTableViewData];
+}
+
+-(void)hiddenFooterRefresh:(StoryBigTableView *)tv{
+    tv.isRefresh = YES;
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+    if (self.isViewLoaded && !self.view.window)
+    {
+        _scrollView = nil;
+        self.view = nil;
+        self.Data = nil;
+    }
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

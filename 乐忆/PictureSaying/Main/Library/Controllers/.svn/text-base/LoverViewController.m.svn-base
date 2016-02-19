@@ -1,0 +1,180 @@
+////
+////  LoverViewController.m
+////  PictureSaying
+////
+////  Created by tutu on 14/12/30.
+////  Copyright (c) 2014年 tutu. All rights reserved.
+////  朋友的相册预览
+//
+//#import "LoverViewController.h"
+//#import "LoverCell.h"
+//#import "DataService.h"
+//#import "UIImageView+WebCache.h"
+//
+//@interface LoverViewController ()
+//
+//@end
+//
+//@implementation LoverViewController
+//
+//#pragma mark - LoadView
+//- (void)viewDidLoad {
+//    [super viewDidLoad];
+//    self.title =@"朋友的相册";
+//    
+//    UICollectionViewFlowLayout *flowLayout = [[UICollectionViewFlowLayout alloc]init];
+//    flowLayout.itemSize = CGSizeMake(80, 80);
+//    flowLayout.scrollDirection = UICollectionViewScrollDirectionVertical;
+//    flowLayout.minimumInteritemSpacing = 0;
+//    flowLayout.sectionInset = UIEdgeInsetsMake(20, 10, 20, 10);
+//    UICollectionView *collectionView = [[UICollectionView alloc]initWithFrame:CGRectMake(0, 0, KScreenWidth, KScreenWidth-30) collectionViewLayout:flowLayout];
+//    collectionView.backgroundColor = [UIColor whiteColor];
+//    [collectionView registerClass:[UICollectionReusableView class] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"Identifierhehe"];
+//    flowLayout.headerReferenceSize = CGSizeMake(0, 30);
+//    [collectionView registerClass:[LoverCell class] forCellWithReuseIdentifier:@"My Cell"];
+//    collectionView.dataSource = self;
+//    collectionView.delegate = self;
+//    [self.view addSubview:collectionView];
+//    selectedImages = [NSArray array];
+//    NSString *urlstring = [NSString stringWithFormat:@"/WeiXiaoAlbum/api/v1/album/%@/photo/day/0/1000",_IdHuoqu];
+//    NSLog(@"%@",urlstring);
+//    [DataService requestWithURL:urlstring params:nil httpMethod:@"GET" block1:^(id result) {
+//        NSLog(@"dicdf == %@",result);
+//        self.bigA = [NSMutableArray array];
+//        NSArray *arrrACount = result;
+//        NSMutableArray  *imageUrls = [NSMutableArray array];
+//        for (NSDictionary *diccc  in arrrACount) {
+//            NSString *TimeTitle = [diccc objectForKey:@"time"];
+//            NSLog(@"%@",TimeTitle);
+//            NSArray *arrrrr = [diccc objectForKey:@"photos"];
+//            for (NSDictionary *diiiii in arrrrr) {
+//                NSString *strdfghjkl = [diiiii objectForKey:@"path"];
+//                NSString *PhotoId = [diiiii objectForKey:@"id"];
+//                [PhotoIdAll addObject:PhotoId];
+//                [imageUrls addObject:strdfghjkl];
+//                [self.bigA addObject:diccc];
+//            }
+//        }
+//        selectedImages = imageUrls;
+//        [collectionView reloadData];
+//        
+//    }];
+//    // Do any additional setup after loading the view.
+//}
+//
+//#pragma mark - MakeCollectionView
+//- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
+//    LoverCell *cell = (LoverCell *)[collectionView cellForItemAtIndexPath:indexPath];
+//    NSString *strghj = cell.path;
+//    if ([selectedImages indexOfObject:strghj] != NSNotFound){
+//        index = [selectedImages indexOfObject:strghj];
+//    }
+//    [self showScrollView];
+//    NSLog(@"biandatu");
+//}
+//
+//- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
+//{
+//    return [[self.bigA[section] objectForKey:@"photos"] count];
+//}
+//
+//- (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath
+//{
+//    
+//    UICollectionReusableView *headView = [collectionView dequeueReusableSupplementaryViewOfKind:kind withReuseIdentifier:@"Identifierhehe" forIndexPath:indexPath];
+//    UILabel *lab= [[UILabel alloc]init];
+//    lab.frame = CGRectMake(15, 0, 200, 30);
+//    lab.text = [self.bigA[indexPath.section] objectForKey:@"time"];
+//    lab.backgroundColor = [UIColor whiteColor];
+//    [headView addSubview:lab];
+//    return headView;
+//}
+//
+//- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
+//{
+//    LoverCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"My Cell" forIndexPath:indexPath];
+//    cell.path = [[[self.bigA[indexPath.section] objectForKey:@"photos"] objectAtIndex:indexPath.row] objectForKey:@"path"];
+//    return cell;
+//}
+//
+//- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView{
+//    
+//    return  self.bigA.count;
+//}
+//
+//
+//#pragma mark - ScrollView
+//-(void)showScrollView{
+//    UIView *theView = [[UIView alloc] initWithFrame:CGRectMake(0, 20, KScreenWidth, KScreenHeight-20)];
+//    theView.alpha = 1;
+//    theView.tag = 100;
+//    theView.backgroundColor = [UIColor colorWithRed:240/255.0 green:240/255.0 blue:240/255.0 alpha:1];
+//    [self.view.window addSubview:theView];
+//    
+//    UILabel *topLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 44)];
+//    topLabel.backgroundColor = [UIColor colorWithRed:252/255.0 green:180/255.0 blue:58/255.0 alpha:1];
+//    topLabel.font = [UIFont systemFontOfSize:25.0];
+//    topLabel.textAlignment = 1;
+//    topLabel.textColor = [UIColor whiteColor];
+//    topLabel.text = @"预览";
+//    [theView addSubview:topLabel];
+//    
+//    UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
+//    backButton.frame = CGRectMake(20, 12, 48, 20);
+//    [backButton setTitle:@"返回" forState:UIControlStateNormal];
+//    backButton.showsTouchWhenHighlighted = YES;
+//    [backButton addTarget:self action:@selector(removeTheViewAction:) forControlEvents:UIControlEventTouchUpInside];
+//    [theView addSubview:backButton];
+//    
+//    UIScrollView *theScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(topLabel.frame), KScreenWidth, CGRectGetHeight(theView.frame)-44)];
+//    theScrollView.contentSize = CGSizeMake(KScreenWidth*selectedImages.count, CGRectGetHeight(theScrollView.frame));
+//    theScrollView.tag = 500;
+//    theScrollView.pagingEnabled = YES;
+//    theScrollView.delegate = self;
+//    theScrollView.backgroundColor = [UIColor clearColor];
+//    theScrollView.showsHorizontalScrollIndicator = NO;
+//    theScrollView.showsVerticalScrollIndicator = NO;
+//    [theView addSubview:theScrollView];
+//    
+//    for (int i = 0; i < selectedImages.count; i++) {
+//        
+//        UIScrollView *scrollIV = [[UIScrollView alloc] initWithFrame:CGRectMake(KScreenWidth*i, 0, KScreenWidth, CGRectGetHeight(theScrollView.frame))];
+//        scrollIV.showsHorizontalScrollIndicator = NO;
+//        scrollIV.delegate = self;
+//        scrollIV.maximumZoomScale = 3;
+//        scrollIV.minimumZoomScale = 1;
+//        scrollIV.tag = 300+i;
+//        [theScrollView addSubview:scrollIV];
+//        
+//        NSString *ig = selectedImages[i];
+//        UIImageView *imageView = [[UIImageView alloc] init];
+//        imageView.contentMode = UIViewContentModeScaleAspectFill;
+//        imageView.clipsToBounds = YES;
+//        imageView.frame = CGRectMake(0, 0, KScreenWidth, 510);
+//        imageView.tag = 400+i;
+//        [imageView sd_setImageWithURL:[NSURL URLWithString:ig]];
+//        [scrollIV addSubview:imageView];
+//    }
+//    theScrollView.contentOffset = CGPointMake(KScreenWidth*index, 0);
+//}
+//
+//#pragma mark - ButtonActon
+//-(void)removeTheViewAction:(UIButton *)btn{
+//    NSLog(@"removesdfghjkl;");
+//    UIView *theView = btn.superview;
+//    [theView removeFromSuperview];
+//    theView = nil;
+//}
+//
+//-(void)didReceiveMemoryWarning{
+//    [super didReceiveMemoryWarning];
+//    if (self.isViewLoaded && !self.view.window)// 是否是正在使用的视图
+//    {
+//        self.bigA = nil;
+//        self.view = nil;// 目的是再次进入时能够重新加载调用viewDidLoad函数。
+//    }
+//}
+//
+//
+//
+//@end

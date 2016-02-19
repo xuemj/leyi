@@ -1,0 +1,62 @@
+//
+//  DataService.h
+//  FirstPro
+//
+//  Created by tutu on 14/11/5.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import "AFNetworking.h"
+#import "ASIFormDataRequest.h"
+
+//#define BASE_URL @"http://192.168.1.200:10080"
+//#define BASE_URL @"http://123.56.101.168"
+#define BASE_URL @"http://192.168.1.199:8080"
+#define TEST_URL @"http://192.168.1.131:8080"
+//#define BASE_URL @"http://123.56.101.168"
+//http://192.168.1.200/upload/union/ava/149/1415423518161045
+//http://192.168.1.200/upload/union/cert/177/1415759318143665
+//http://192.168.1.200/upload/union/stu/149/1415759318154901
+
+typedef void(^CompletionLoad)(NSObject *result);
+typedef void(^CompletionLoadHandle)(id result);
+typedef void(^FailedLoadHandle)(id result);
+
+@interface DataService : NSObject
+
++ (ASIHTTPRequest *)requestWithURL:(NSString *)urlstring
+                            params:(NSMutableDictionary *)params
+                        httpMethod:(NSString *)httpMethod
+                            block1:(CompletionLoadHandle)block failLoad:(FailedLoadHandle)block1;
+
+//网络请求：AFNetworking
++ (AFHTTPRequestOperation *)requestWithURL:(NSString *)url
+                                    params:(NSMutableDictionary *)params
+                                httpMethod:(NSString *)httpMethod
+                                     block:(CompletionLoad)block
+                                  failLoad:(FailedLoadHandle)block1
+                             requestHeader:(NSDictionary *)header;
+
+//网络请求：系统自带类库
++ (NSMutableURLRequest *)requestWithURL:(NSString *)urlstring
+                                 params:(NSMutableDictionary *)params
+                          requestHeader:(NSDictionary *)header
+                             httpMethod:(NSString *)httpMethod
+                                  block:(CompletionLoad)block
+                               failLoad:(FailedLoadHandle)block1;
+
++ (AFHTTPRequestOperation *)requestWithURL:(NSString *)urlstring
+                                    params:(NSMutableDictionary *)params
+                                httpMethod:(NSString *)httpMethod
+                                     block:(CompletionLoadHandle)block
+                                  failLoad:(FailedLoadHandle)block1;
+
++ (ASIHTTPRequest *)rrequestWithURL:(NSString *)urlstring
+                             params:(NSMutableDictionary *)params
+                         httpMethod:(NSString *)httpMethod
+                             block1:(CompletionLoadHandle)block
+                           failLoad:(FailedLoadHandle)block1;
+
+
+@end

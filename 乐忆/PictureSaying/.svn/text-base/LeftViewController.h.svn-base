@@ -1,0 +1,19 @@
+//
+//  LeftViewController.h
+//  PictureSaying
+//
+//  Created by tutu on 14/12/4.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "FLbianjiViewController.h"
+
+@interface LeftViewController : UIViewController
+{
+    FLbianjiViewController *flbianji;
+    UIButton *userButton;
+    UILabel *usernameLabel;
+    NSString *userAva;
+}
+@end

@@ -1,0 +1,159 @@
+//
+//  ITLogUtils.m
+//  AcuCom
+//
+//  Created by wfs-aculearn on 14-3-27.
+//  Copyright (c) 2014年 aculearn. All rights reserved.
+//
+
+#import "ACLogUtils.h"
+//#import "common/CAHostTimeBase.h"
+
+// 最大单个日志文件大小
+#define kMaxLogFileSize 1024*1024*2
+
+@interface ACLogTagItem : NSObject
+
+@property (nonatomic, readwrite) unsigned long tagId;
+/* beginNSThread endNSThread 用于判断是否是在同一线程中*/
+@property (nonatomic, readwrite) unsigned long beginNSThread;
+@property (nonatomic, readwrite) unsigned long endNSThread;
+@property (nonatomic, retain) NSString *tagStr;
+@property (nonatomic, readwrite) UInt64 beginTime;
+@property (nonatomic, readwrite) float elapsedTime;
+@end
+
+@implementation ACLogTagItem
+
+@synthesize tagId, beginNSThread, endNSThread, tagStr, beginTime, elapsedTime;
+
+- (void)dealloc {
+    self.tagStr = nil;
+    [super dealloc];
+}
+
+@end
+
+@interface ACLogUtils(Private)
+
+- (ACLogTagItem *)findTagItemByTagId:(unsigned long)tagId;
+
+- (void)showTagLog:(ACLogTagItem *)tagItem;
+
+@end
+
+@implementation ACLogUtils(Private)
+
+- (ACLogTagItem *)findTagItemByTagId:(unsigned long)tagId {
+    // 简单的来
+    ACLogTagItem *result = nil;
+
+    for (ACLogTagItem *item in _tagList) {
+        if ( tagId == item.tagId ) {
+            result = item;
+            break;
+        }
+    }// for
+    return result;
+}
+
+@end
+
+@implementation ACLogUtils
+
+static ACLogUtils *_shareLog = nil;
+static bool needCheckLogFileSize = NO;
+
+- (id)init
+{
+    @synchronized(self) {
+        self = [super init];
+        if (self) {
+            // Initialization code here.
+            geneId = 0;
+            _tagList = [[NSMutableArray alloc] init];
+        }        
+    }
+    
+    return self;
+}
+
+- (void)dealloc {
+    [_tagList release];
+    [self clearTags];
+    [super dealloc];
+    @synchronized(self) {
+        _shareLog = nil;
+    }
+}
+
++ (ACLogUtils *)shareLog {
+    @synchronized(self) {
+        if (nil == _shareLog) {
+            _shareLog = [[ACLogUtils alloc] init];
+            
+        }
+    }
+    return _shareLog;
+}
+
++ (void)switchStderrToFile {
+#if TARGET_IPHONE_SIMULATOR
+    // 模拟器上暂时就不用日志文件了
+#else
+    // 真机上直接重定向日志到文件
+    NSString *paths =  NSTemporaryDirectory();// NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    
+    NSString *logPath = [[paths stringByAppendingPathComponent:@"AcuCom.log"] retain];
+    NSString *logbakPath = [[paths stringByAppendingPathComponent:@"AcuCom_bak.log"] retain];
+
+    NSError *error = nil;
+    if ([fileManager fileExistsAtPath:logPath]) {
+        BOOL needBakLogFile = NO;
+        NSDictionary *fileAttributes = [fileManager attributesOfItemAtPath:logPath error:&error];
+        //NSDictionary *fileAttributes = [fileManager fileAttributesAtPath:logPath traverseLink:YES];
+        if(fileAttributes != nil) {
+            NSNumber *fileSize = [fileAttributes objectForKey:NSFileSize];
+            // 大于200KB时切换log文
+            needBakLogFile = ([fileSize unsignedLongLongValue] > kMaxLogFileSize);
+        }// if
+        if (needBakLogFile) {
+            // 使日志文件控制在200KB * 2左右
+//            if (stderr) {
+//                // 安全第一
+//                fclose(stderr);
+//            }// if
+            [fileManager removeItemAtPath:logbakPath error:&error];
+            //[fileManager copyItemAtPath:logPath toPath:logbakPath error:&error];
+            //[fileManager removeItemAtPath:logPath error:&error];
+            // 改名效率会高些
+            [fileManager moveItemAtPath:logPath toPath:logbakPath error:&error];            
+        }// if
+    }// if
+    // 将日志文件重定向到文件
+    freopen([logPath cStringUsingEncoding:NSASCIIStringEncoding],"a+",stderr);
+    [logPath release];
+    [logbakPath release];
+    needCheckLogFileSize = YES;
+#endif
+}
+
++ (void)checkLogFileSize {
+#if TARGET_IPHONE_SIMULATOR
+    // 模拟器上暂时就不用日志文件了
+#else
+    // 真机上直接重定向日志到文件
+    if (needCheckLogFileSize == YES) {
+        [ACLogUtils switchStderrToFile];
+    }
+#endif  
+}
+
+- (void)clearTags {
+    @synchronized(self) {
+        [_tagList removeAllObjects];
+    }    
+}
+
+@end

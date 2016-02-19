@@ -1,0 +1,23 @@
+//
+//  DebugViewController.h
+//  PictureSaying
+//
+//  Created by tutu on 14/12/19.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "BaseViewController.h"
+#import "StoryDebugTableView.h"
+#import "IndexModel.h"
+#import "EventModel.h"
+#import "CommentViewController.h"
+
+@interface DebugViewController : BaseViewController<CommentViewControllerDelegate>
+{
+    StoryDebugTableView *debugTV;
+    UILabel *tipNullLabel;
+}
+@property(nonatomic, retain)IndexModel *model;
+@property(nonatomic, retain)NSMutableArray *Data;
+@property(nonatomic, retain)NSString *isUser;
+@end

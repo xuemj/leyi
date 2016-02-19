@@ -1,0 +1,45 @@
+////
+////  LoverCell.m
+////  PictureSaying
+////
+////  Created by tutu on 14/12/30.
+////  Copyright (c) 2014年 tutu. All rights reserved.
+////
+//
+//#import "LoverCell.h"
+//#import "UIImageView+WebCache.h"
+//
+//@implementation LoverCell
+//-(instancetype)initWithFrame:(CGRect)frame{
+//    self = [super initWithFrame:frame];
+//    if (self) {
+//        [self _initViews];
+//    }
+//    return self;
+//}
+//
+//-(void)_initViews{
+//    
+//    FrindImage = [[UIImageView alloc] initWithFrame:CGRectZero];
+//    [self.contentView addSubview:FrindImage];
+//}
+//
+//-(void)awakeFromNib{
+//    [super awakeFromNib];
+//}
+//
+//-(void)setPath:(NSString *)path{
+//    if (_path != path) {
+//        _path = path;
+//        [self setNeedsLayout];
+//    }
+//}
+//
+//-(void)layoutSubviews{
+//    [super layoutSubviews];
+//    FrindImage.frame = CGRectMake(5, 5, 80, 80);
+//    [FrindImage sd_setImageWithURL:[NSURL URLWithString:_path]];
+//}
+//
+//@end
+//

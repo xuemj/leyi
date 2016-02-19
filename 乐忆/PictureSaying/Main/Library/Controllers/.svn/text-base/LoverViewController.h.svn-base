@@ -1,0 +1,26 @@
+////
+////  LoverViewController.h
+////  PictureSaying
+////
+////  Created by tutu on 14/12/30.
+////  Copyright (c) 2014年 tutu. All rights reserved.
+////
+//
+//#import "BaseViewController.h"
+//
+//@interface LoverViewController : BaseViewController<UICollectionViewDelegate,UICollectionViewDelegateFlowLayout,
+//UICollectionViewDataSource,
+//UINavigationControllerDelegate,UIScrollViewDelegate,
+//UIActionSheetDelegate>{
+//    
+////   UIImagePickerController *controller;
+//    NSString *Jieshou;
+//    NSArray *selectedImages;
+//    NSInteger index;
+//    NSMutableArray *PhotoIdAll;
+//}
+//
+//@property(nonatomic,retain)NSString *IdHuoqu;
+//@property(nonatomic,retain)NSMutableArray *bigA;
+//
+//@end

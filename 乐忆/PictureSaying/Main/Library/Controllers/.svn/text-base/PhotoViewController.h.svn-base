@@ -1,0 +1,24 @@
+////
+////  PhotoViewController.h
+////  PictureSaying
+////
+////  Created by tutu on 14/12/15.
+////  Copyright (c) 2014年 tutu. All rights reserved.
+////
+//
+//#import "BaseViewController.h"
+//
+//@interface PhotoViewController : BaseViewController<UICollectionViewDelegate,UICollectionViewDelegateFlowLayout,UICollectionViewDataSource,
+//UINavigationControllerDelegate>
+//{
+//    NSString *Jieshou;
+//    //返回多少相册头
+//    NSArray *FrindArray;
+//    UILabel *BianTiAlumb;
+//    UICollectionView *collectionView1;
+//    NSMutableArray *COllViewMut;
+//    NSTimer *clearTimer;
+//}
+//@property(nonatomic,retain)NSString *IdChuanZhi;
+//
+//@end

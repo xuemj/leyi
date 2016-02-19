@@ -1,0 +1,30 @@
+//
+//  IndexTableView.h
+//  PictureSaying
+//
+//  Created by tutu on 14/12/8.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "BaseTableView.h"
+
+@interface IndexTableView : BaseTableView<UITableViewDataSource,UITableViewDelegate>
+{
+    NSMutableArray *statusArray;
+    NSMutableDictionary *statusDic;
+}
+
+#warning - bug
+
+/*
+     1.预览界面的上下拉刷新 -- 1天
+     2.故事详情界面评论、分享的点击事件处理 -- 1天
+     3.创建事件代码优化以及逻辑提示处理 -- 1天
+     4.故事模块整体布局的优化 -- 1天
+     5.四种机型的适配 -- 1天
+     6.创建故事or编辑故事，模板视图的布局调整 -- 0.5天
+     7.用户登录相关界面及接口的调整，二次免登陆的逻辑处理（抽时间做）
+*/
+
+@property(nonatomic, retain)NSMutableArray *indexData;
+@end

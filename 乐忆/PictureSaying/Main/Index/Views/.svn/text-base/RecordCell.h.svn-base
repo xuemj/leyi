@@ -1,0 +1,37 @@
+//
+//  RecordCell.h
+//  PictureSaying
+//
+//  Created by tutu on 15/1/27.
+//  Copyright (c) 2015年 tutu. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "EventModel.h"
+#import "MainModel.h"
+
+@interface RecordCell : UITableViewCell<UIImagePickerControllerDelegate,UINavigationControllerDelegate,UIAlertViewDelegate>
+
+@property (weak, nonatomic) IBOutlet UIImageView *userAva;
+@property (weak, nonatomic) IBOutlet UILabel *userName;
+@property (weak, nonatomic) IBOutlet UILabel *line;
+@property (weak, nonatomic) IBOutlet UILabel *content;
+@property (weak, nonatomic) IBOutlet UIImageView *mainImage;
+@property (weak, nonatomic) IBOutlet UIButton *share;
+@property (weak, nonatomic) IBOutlet UIButton *comment;
+@property (weak, nonatomic) IBOutlet UIButton *like;
+@property (weak, nonatomic) IBOutlet UIButton *deleteButton;
+@property (weak, nonatomic) IBOutlet UILabel *picCount;
+@property (weak, nonatomic) IBOutlet UIView *bgView;
+@property (weak, nonatomic) IBOutlet UILabel *oneLine;
+@property (weak, nonatomic) IBOutlet UILabel *twoLine;
+@property (weak, nonatomic) IBOutlet UIButton *changeCover;
+@property (weak, nonatomic) IBOutlet UIButton *attention;
+
+//@property (nonatomic, retain)EventModel *model;
+@property (nonatomic, retain)MainModel *model;
+@property(nonatomic, assign)BOOL isMine;
+@property(nonatomic, retain)NSNumber *row;
+@property(nonatomic, retain)NSDictionary *storyDic;
+@property(nonatomic, copy)NSString *isStory;
+@end

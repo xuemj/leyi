@@ -1,0 +1,27 @@
+//
+//  IndexViewController.h
+//  PictureSaying
+//
+//  Created by tutu on 14/12/3.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "BaseViewController.h"
+#import "IndexTableView.h"
+#import "CommentViewController.h"
+
+@interface IndexViewController : BaseViewController<UIGestureRecognizerDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate,CommentViewControllerDelegate>
+
+{
+    IndexTableView *_tableView;
+    UIImageView *_tabBarImgView;
+    IndexTableView *_tableView1;
+    UILabel *tipLabel;
+    UILabel *finishTipLabel;
+}
+
+@property(nonatomic, retain)NSMutableArray *data;
+@property(nonatomic, retain)NSMutableArray *data1;
+@property(nonatomic, retain)NSMutableArray *friendData;
+@property(nonatomic, retain)NSMutableArray *mineData;
+@end

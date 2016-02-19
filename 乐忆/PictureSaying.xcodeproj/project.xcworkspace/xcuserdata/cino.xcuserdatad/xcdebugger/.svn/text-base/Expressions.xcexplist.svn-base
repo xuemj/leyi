@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "-[IndexTableViewCell layoutSubviews]:IndexTableViewCell.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "self.model">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[HeaderViewCell setInfo:]:HeaderViewCell.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "_indexModel">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[CommentViewCell setComment:]:CommentViewCell.m">
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>

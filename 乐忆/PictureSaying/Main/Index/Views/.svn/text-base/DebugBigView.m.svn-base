@@ -1,0 +1,377 @@
+//
+//  DebugBigView.m
+//  PictureSaying
+//
+//  Created by tutu on 14/12/19.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "DebugBigView.h"
+#import "UIImageView+WebCache.h"
+#define ImageUrl @"http://192.168.1.200:8888/"
+
+@implementation DebugBigView
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+        [self _initViews];
+    }
+    return self;
+}
+
+-(void)_initViews{
+    iv1 = [[UIImageView alloc] initWithFrame:CGRectZero];
+    iv1.contentMode = UIViewContentModeScaleAspectFill;
+    iv1.backgroundColor = rgb(241, 241, 241, 1);
+    iv1.clipsToBounds = YES;
+    iv2 = [[UIImageView alloc] initWithFrame:CGRectZero];
+    iv2.contentMode = UIViewContentModeScaleAspectFill;
+    iv2.clipsToBounds = YES;
+    iv3 = [[UIImageView alloc] initWithFrame:CGRectZero];
+    iv3.contentMode = UIViewContentModeScaleAspectFill;
+    iv3.clipsToBounds = YES;
+    iv4 = [[UIImageView alloc] initWithFrame:CGRectZero];
+    iv4.contentMode = UIViewContentModeScaleAspectFill;
+    iv4.clipsToBounds = YES;
+    iv5 = [[UIImageView alloc] initWithFrame:CGRectZero];
+    iv5.contentMode = UIViewContentModeScaleAspectFill;
+    iv5.clipsToBounds = YES;
+    [self addSubview:iv1];
+    [self addSubview:iv2];
+    [self addSubview:iv3];
+    [self addSubview:iv4];
+    [self addSubview:iv5];
+    
+    iv11 = [[UIImageView alloc] initWithFrame:CGRectZero];
+    [iv1 addSubview:iv11];
+    iv22 = [[UIImageView alloc] initWithFrame:CGRectZero];
+    [iv2 addSubview:iv22];
+    iv33 = [[UIImageView alloc] initWithFrame:CGRectZero];
+    [iv3 addSubview:iv33];
+    iv44 = [[UIImageView alloc] initWithFrame:CGRectZero];
+    [iv4 addSubview:iv44];
+    iv55 = [[UIImageView alloc] initWithFrame:CGRectZero];
+    [iv5 addSubview:iv55];
+    
+    lab1 = [[UILabel alloc] initWithFrame:CGRectZero];
+    lab1.numberOfLines = 0;
+    lab1.font = [UIFont systemFontOfSize:20.0];
+    lab1.textColor = [UIColor whiteColor];
+    [iv11 addSubview:lab1];
+    
+    lab2 = [[UILabel alloc] initWithFrame:CGRectZero];
+    lab2.font = [UIFont systemFontOfSize:20.0];
+    lab2.textColor = [UIColor whiteColor];
+    lab2.numberOfLines = 0;
+    [iv22 addSubview:lab2];
+    
+    lab3 = [[UILabel alloc] initWithFrame:CGRectZero];
+    lab3.font = [UIFont systemFontOfSize:20.0];
+    lab3.textColor = [UIColor whiteColor];
+    lab3.numberOfLines = 0;
+    [iv33 addSubview:lab3];
+    
+    lab4 = [[UILabel alloc] initWithFrame:CGRectZero];
+    lab4.font = [UIFont systemFontOfSize:20.0];
+    lab4.textColor = [UIColor whiteColor];
+    lab4.numberOfLines = 0;
+    [iv44 addSubview:lab4];
+    
+    lab5 = [[UILabel alloc] initWithFrame:CGRectZero];
+    lab5.font = [UIFont systemFontOfSize:20.0];
+    lab5.textColor = [UIColor whiteColor];
+    lab5.numberOfLines = 0;
+    [iv55 addSubview:lab5];
+}
+
+-(void)setPics:(NSArray *)pics{
+    if (_pics != pics) {
+        _pics = pics;
+        [self setNeedsLayout];
+    }
+}
+
+-(void)layoutSubviews{
+    [super layoutSubviews];
+    if (_pics.count == 1) {
+        iv1.frame = CGRectMake(0, 0, KScreenWidth, KScreenHeight-64-50);
+        if (![[_pics[0] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[0] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:[_pics[0] objectForKey:@"path"]]];
+            }else{
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[0] objectForKey:@"path"]]]];
+            }
+        }
+        iv11.frame = CGRectMake(0, iv1.height-KScreenWidth*264/640, KScreenWidth, KScreenWidth*264/640);
+        iv11.image = [UIImage imageNamed:@"bigbgimage.png"];
+        if (![[_pics[0] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size = [[_pics[0] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:20.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab1.frame = CGRectMake(10, iv11.height-40-size.height-10, KScreenWidth-20, size.height+10);
+            lab1.text = [_pics[0] objectForKey:@"txt"];
+        }else{
+            lab1.frame = CGRectMake(10, iv11.height-40-10-10, KScreenWidth-20, 20);
+            lab1.text = @"";
+        }
+    }else if (_pics.count == 2){
+        iv1.frame = CGRectMake(0, 0, KScreenWidth, KScreenHeight-64-50);
+        if (![[_pics[0] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[0] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:[_pics[0] objectForKey:@"path"]]];
+            }else{
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[0] objectForKey:@"path"]]]];
+            }
+        }
+        iv11.frame = CGRectMake(0, iv1.height-KScreenWidth*264/640, KScreenWidth, KScreenWidth*264/640);
+        iv11.image = [UIImage imageNamed:@"bigbgimage.png"];
+        if (![[_pics[0] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size1 = [[_pics[0] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:20.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab1.frame = CGRectMake(10, iv11.height-40-size1.height-10, KScreenWidth-20, size1.height+10);
+            lab1.text = [_pics[0] objectForKey:@"txt"];
+        }else{
+            lab1.frame = CGRectMake(10, iv11.height-40-10-10, KScreenWidth-20, 20);
+            lab1.text = @"";
+        }
+        
+        iv2.frame = CGRectMake(0, iv1.bottom, KScreenWidth, KScreenHeight-64-50);
+        if (![[_pics[1] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[1] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                [iv2 sd_setImageWithURL:[NSURL URLWithString:[_pics[1] objectForKey:@"path"]]];
+            }else{
+                [iv2 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[1] objectForKey:@"path"]]]];
+            }
+        }
+        iv22.frame = CGRectMake(0, iv2.height-KScreenWidth*264/640, KScreenWidth, KScreenWidth*264/640);
+        iv22.image = [UIImage imageNamed:@"bigbgimage.png"];
+        if (![[_pics[0] objectForKey:@"txt"] isKindOfClass:[NSNull class]]){
+            CGSize size2 = [[_pics[1] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:20.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab2.frame = CGRectMake(10, iv22.height-40-size2.height-10, KScreenWidth-20, size2.height+10);
+            lab2.text = [_pics[1] objectForKey:@"txt"];
+        }else{
+            lab2.frame = CGRectMake(10, iv22.height-40-10-10, KScreenWidth-20, 20);
+            lab2.text = @"";
+        }
+    }else if (_pics.count == 3){
+        iv1.frame = CGRectMake(0, 0, KScreenWidth, KScreenHeight-64-50);
+        if (![[_pics[0] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[0] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:[_pics[0] objectForKey:@"path"]]];
+            }else{
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[0] objectForKey:@"path"]]]];
+            }
+        }
+        iv11.frame = CGRectMake(0, iv1.height-KScreenWidth*264/640, KScreenWidth, KScreenWidth*264/640);
+        iv11.image = [UIImage imageNamed:@"bigbgimage.png"];
+        if (![[_pics[0] objectForKey:@"txt"] isKindOfClass:[NSNull class]]){
+            CGSize size1 = [[_pics[0] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:20.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab1.frame = CGRectMake(10, iv11.height-40-size1.height-10, KScreenWidth-20, size1.height+10);
+            lab1.text = [_pics[0] objectForKey:@"txt"];
+        }else{
+            lab1.frame = CGRectMake(10, iv11.height-40-10-10, KScreenWidth-20, 20);
+            lab1.text = @"";
+        }
+        iv2.frame = CGRectMake(0, iv1.bottom, KScreenWidth, KScreenHeight-64-50);
+        if (![[_pics[1] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[1] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                [iv2 sd_setImageWithURL:[NSURL URLWithString:[_pics[1] objectForKey:@"path"]]];
+            }else{
+                [iv2 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[1] objectForKey:@"path"]]]];
+            }
+        }
+        iv22.frame = CGRectMake(0, iv2.height-KScreenWidth*264/640, KScreenWidth, KScreenWidth*264/640);
+        iv22.image = [UIImage imageNamed:@"bigbgimage.png"];
+        CGSize size2 = [[_pics[1] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:20.0] constrainedToSize:CGSizeMake(200, 1000)];
+        lab2.frame = CGRectMake(10, iv22.height-40-size2.height-10, KScreenWidth-20, size2.height+10);
+        lab2.text = [_pics[1] objectForKey:@"txt"];
+        
+        iv3.frame = CGRectMake(0, iv2.bottom, KScreenWidth, KScreenHeight-64-50);
+        if (![[_pics[2] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[2] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                [iv3 sd_setImageWithURL:[NSURL URLWithString:[_pics[2] objectForKey:@"path"]]];
+            }else{
+                [iv3 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[2] objectForKey:@"path"]]]];
+            }
+        }
+        iv33.frame = CGRectMake(0, iv3.height-KScreenWidth*264/640, KScreenWidth, KScreenWidth*264/640);
+        iv33.image = [UIImage imageNamed:@"bigbgimage.png"];
+        CGSize size3 = [[_pics[2] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:20.0] constrainedToSize:CGSizeMake(200, 1000)];
+        lab3.frame = CGRectMake(10, iv33.height-40-size3.height-10, KScreenWidth-20, size3.height+10);
+        lab3.text = [_pics[2] objectForKey:@"txt"];
+        
+    }else if (_pics.count == 4){
+        iv1.frame = CGRectMake(0, 0, KScreenWidth, KScreenHeight-64-50);
+        if (![[_pics[0] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[0] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:[_pics[0] objectForKey:@"path"]]];
+            }else{
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[0] objectForKey:@"path"]]]];
+            }
+        }
+        iv11.frame = CGRectMake(0, iv1.height-KScreenWidth*264/640, KScreenWidth, KScreenWidth*264/640);
+        iv11.image = [UIImage imageNamed:@"bigbgimage.png"];
+        if (![[_pics[0] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size1 = [[_pics[0] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:20.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab1.frame = CGRectMake(10, iv11.height-40-size1.height-10, KScreenWidth-20, size1.height+10);
+            lab1.text = [_pics[0] objectForKey:@"txt"];
+        }else{
+            lab1.frame = CGRectMake(10, iv11.height-40-10-10, KScreenWidth-20, 20);
+            lab1.text = @"";
+        }
+        iv2.frame = CGRectMake(0, iv1.bottom, KScreenWidth, KScreenHeight-64-50);
+        if (![[_pics[1] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[1] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                [iv2 sd_setImageWithURL:[NSURL URLWithString:[_pics[1] objectForKey:@"path"]]];
+            }else{
+                [iv2 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[1] objectForKey:@"path"]]]];
+            }
+        }
+        iv22.frame = CGRectMake(0, iv2.height-KScreenWidth*264/640, KScreenWidth, KScreenWidth*264/640);
+        iv22.image = [UIImage imageNamed:@"bigbgimage.png"];
+        if (![[_pics[1] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size2 = [[_pics[1] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:20.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab2.frame = CGRectMake(10, iv22.height-40-size2.height-10, KScreenWidth-20, size2.height+10);
+            lab2.text = [_pics[1] objectForKey:@"txt"];
+        }else{
+            lab2.frame = CGRectMake(10, iv22.height-40-10-10, KScreenWidth-20, 20);
+            lab2.text = @"";
+        }
+        iv3.frame = CGRectMake(0, iv2.bottom, KScreenWidth, KScreenHeight-64-50);
+        if (![[_pics[2] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[2] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                [iv3 sd_setImageWithURL:[NSURL URLWithString:[_pics[2] objectForKey:@"path"]]];
+            }else{
+                [iv3 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[2] objectForKey:@"path"]]]];
+            }
+        }
+        iv33.frame = CGRectMake(0, iv3.height-KScreenWidth*264/640, KScreenWidth, KScreenWidth*264/640);
+        iv33.image = [UIImage imageNamed:@"bigbgimage.png"];
+        if (![[_pics[2] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size3 = [[_pics[2] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:20.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab3.frame = CGRectMake(10, iv33.height-40-size3.height-10, KScreenWidth-20, size3.height+10);
+            lab3.text = [_pics[2] objectForKey:@"txt"];
+        }else{
+            lab3.frame = CGRectMake(10, iv33.height-40-10-10, KScreenWidth-20, 20);
+            lab3.text = @"";
+        }
+        iv4.frame = CGRectMake(0, iv3.bottom, KScreenWidth, KScreenHeight-64-50);
+        if (![[_pics[3] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[3] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                [iv4 sd_setImageWithURL:[NSURL URLWithString:[_pics[3] objectForKey:@"path"]]];
+            }else{
+                [iv4 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[3] objectForKey:@"path"]]]];
+            }
+        }
+        iv44.frame = CGRectMake(0, iv4.height-KScreenWidth*264/640, KScreenWidth, KScreenWidth*264/640);
+        iv44.image = [UIImage imageNamed:@"bigbgimage.png"];
+        if (![[_pics[3] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size4 = [[_pics[3] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:20.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab4.frame = CGRectMake(10, iv44.height-40-size4.height-10, KScreenWidth-20, size4.height+10);
+            lab4.text = [_pics[3] objectForKey:@"txt"];
+        }else{
+            lab4.frame = CGRectMake(10, iv44.height-40-10-10, KScreenWidth-20, 20);
+            lab4.text = @"";
+        }
+    }else if (_pics.count == 5){
+        iv1.frame = CGRectMake(0, 0, KScreenWidth, KScreenHeight-64-50);
+        if (![[_pics[0] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[0] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:[_pics[0] objectForKey:@"path"]]];
+            }else{
+                [iv1 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[0] objectForKey:@"path"]]]];
+            }
+        }
+        iv11.frame = CGRectMake(0, iv1.height-KScreenWidth*264/640, KScreenWidth, KScreenWidth*264/640);
+        iv11.image = [UIImage imageNamed:@"bigbgimage.png"];
+        if (![[_pics[0] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size1 = [[_pics[0] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:20.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab1.frame = CGRectMake(10, iv11.height-40-size1.height-10, KScreenWidth-20, size1.height+10);
+            lab1.text = [_pics[0] objectForKey:@"txt"];
+        }else{
+            lab1.frame = CGRectMake(10, iv11.height-40-10-10, KScreenWidth-20, 20);
+            lab1.text = @"";
+        }
+        iv2.frame = CGRectMake(0, iv1.bottom, KScreenWidth, KScreenHeight-64-50);
+        if (![[_pics[1] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[1] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                [iv2 sd_setImageWithURL:[NSURL URLWithString:[_pics[1] objectForKey:@"path"]]];
+            }else{
+                [iv2 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[1] objectForKey:@"path"]]]];
+            }
+        }
+        iv22.frame = CGRectMake(0, iv2.height-KScreenWidth*264/640, KScreenWidth, KScreenWidth*264/640);
+        iv22.image = [UIImage imageNamed:@"bigbgimage.png"];
+        if (![[_pics[1] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size2 = [[_pics[1] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:20.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab2.frame = CGRectMake(10, iv22.height-40-size2.height-10, KScreenWidth-20, size2.height+10);
+            lab2.text = [_pics[1] objectForKey:@"txt"];
+        }else{
+            lab2.frame = CGRectMake(10, iv22.height-40-10-10, KScreenWidth-20, 20);
+            lab2.text = @"";
+        }
+        iv3.frame = CGRectMake(0, iv2.bottom, KScreenWidth, KScreenHeight-64-50);
+        if (![[_pics[2] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[2] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                [iv3 sd_setImageWithURL:[NSURL URLWithString:[_pics[2] objectForKey:@"path"]]];
+            }else{
+                [iv3 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[2] objectForKey:@"path"]]]];
+            }
+        }
+        iv33.frame = CGRectMake(0, iv3.height-KScreenWidth*264/640, KScreenWidth, KScreenWidth*264/640);
+        iv33.image = [UIImage imageNamed:@"bigbgimage.png"];
+        if (![[_pics[2] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size3 = [[_pics[2] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:20.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab3.frame = CGRectMake(10, iv33.height-40-size3.height-10, KScreenWidth-20, size3.height+10);
+            lab3.text = [_pics[2] objectForKey:@"txt"];
+        }else{
+            lab3.frame = CGRectMake(10, iv33.height-40-10-10, KScreenWidth-20, 20);
+            lab3.text = @"";
+        }
+        iv4.frame = CGRectMake(0, iv3.bottom, KScreenWidth, KScreenHeight-64-50);
+        if (![[_pics[3] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[3] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                [iv4 sd_setImageWithURL:[NSURL URLWithString:[_pics[3] objectForKey:@"path"]]];
+            }else{
+                [iv4 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[3] objectForKey:@"path"]]]];
+            }
+        }
+        iv44.frame = CGRectMake(0, iv4.height-KScreenWidth*264/640, KScreenWidth, KScreenWidth*264/640);
+        iv44.image = [UIImage imageNamed:@"bigbgimage.png"];
+        if (![[_pics[3] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size4 = [[_pics[3] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:20.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab4.frame = CGRectMake(10, iv44.height-40-size4.height-10, KScreenWidth-20, size4.height+10);
+            lab4.text = [_pics[3] objectForKey:@"txt"];
+        }else{
+            lab4.frame = CGRectMake(10, iv44.height-40-10-10, KScreenWidth-20, 20);
+            lab4.text = @"";
+        }
+        iv5.frame = CGRectMake(0, iv4.bottom, KScreenWidth, KScreenHeight-64-50);
+        if (![[_pics[4] objectForKey:@"path"] isKindOfClass:[NSNull class]]) {
+            if ([[_pics[4] objectForKey:@"path"] rangeOfString:@"http:"].location != NSNotFound) {
+                [iv5 sd_setImageWithURL:[NSURL URLWithString:[_pics[4] objectForKey:@"path"]]];
+            }else{
+                [iv5 sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",ImageUrl,[_pics[4] objectForKey:@"path"]]]];
+            }
+        }
+        iv55.frame = CGRectMake(0, iv5.height-KScreenWidth*264/640, KScreenWidth, KScreenWidth*264/640);
+        iv55.image = [UIImage imageNamed:@"bigbgimage.png"];
+        if (![[_pics[4] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size5 = [[_pics[4] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:20.0] constrainedToSize:CGSizeMake(200, 1000)];
+            lab5.frame = CGRectMake(10, iv55.height-40-size5.height-10, KScreenWidth-20, size5.height+10);
+            lab5.text = [_pics[4] objectForKey:@"txt"];;
+        }else{
+            lab5.frame = CGRectMake(10, iv55.height-40-10-10, KScreenWidth-20, 20);
+            lab5.text = @"";
+        }
+        
+    }
+}
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect {
+    // Drawing code
+}
+*/
+
+@end

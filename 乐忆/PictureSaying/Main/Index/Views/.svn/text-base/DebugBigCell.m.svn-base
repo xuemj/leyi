@@ -1,0 +1,51 @@
+//
+//  DebugBigCell.m
+//  PictureSaying
+//
+//  Created by tutu on 14/12/19.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "DebugBigCell.h"
+
+@implementation DebugBigCell
+-(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier{
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        [self _initView];
+    }
+    return self;
+}
+
+- (void)awakeFromNib {
+    // Initialization code
+}
+
+
+-(void)_initView{
+    debugBigView = [[DebugBigView alloc] initWithFrame:CGRectZero];
+    
+    [self.contentView addSubview:debugBigView];
+}
+
+-(void)setModel:(EventModel *)model{
+    if (_model != model) {
+        _model = model;
+        [self setNeedsLayout];
+    }
+}
+
+-(void)layoutSubviews{
+    [super layoutSubviews];
+    debugBigView.frame = CGRectMake(0, 0, KScreenWidth, self.height);
+    debugBigView.pics = self.model.pics;
+}
+
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+@end

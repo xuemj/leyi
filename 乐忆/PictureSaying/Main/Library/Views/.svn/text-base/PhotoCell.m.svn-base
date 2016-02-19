@@ -1,0 +1,44 @@
+////
+////  PhotoCell.m
+////  PictureSaying
+////
+////  Created by tutu on 15/1/3.
+////  Copyright (c) 2015年 tutu. All rights reserved.
+////
+//
+//#import "PhotoCell.h"
+//
+//@implementation PhotoCell
+//
+//-(instancetype)initWithFrame:(CGRect)frame{
+//    self = [super initWithFrame:frame];
+//    if (self) {
+//        [self _initViews];
+//    }
+//    return self;
+//}
+//
+//-(void)_initViews{
+//    photoImage = [[UIImageView alloc] initWithFrame:CGRectZero];
+//    photoImage.layer.cornerRadius = 5;
+//    photoImage.layer.masksToBounds = YES;
+//    [self.contentView addSubview:photoImage];
+//}
+//
+//-(void)awakeFromNib{
+//    [super awakeFromNib];
+//}
+//
+//-(void)setPath:(NSString *)path{
+//    if (_path != path) {
+//        _path = path;
+//        [self setNeedsLayout];
+//    }
+//}
+//
+//-(void)layoutSubviews{
+//    [super layoutSubviews];
+//    photoImage.frame = CGRectMake(1, 1, self.height-2, self.height-2);
+//    [photoImage sd_setImageWithURL:[NSURL URLWithString:_path]];
+//}
+//@end

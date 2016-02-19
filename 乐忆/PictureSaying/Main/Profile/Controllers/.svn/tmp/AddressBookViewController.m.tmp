@@ -1,0 +1,380 @@
+//
+//  AddressBookViewController.m
+//  WeTime
+//
+//  Created by tutu on 14/12/1.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "AddressBookViewController.h"
+#import <AddressBook/AddressBook.h>
+#import "AddressBookModel.h"
+#import "DataService.h"
+#import "NSString+URLEncoding.h"
+#import "addressBookTableViewCell.h"
+#import "base64.h"
+#import "GTMDefines.h"
+#import "GTMBase64.h"
+@interface AddressBookViewController ()<UISearchBarDelegate>
+{
+    NSMutableArray *arr;
+    NSMutableArray *phones;
+    AddressBookModel *model;
+    NSMutableArray *nameArray;
+    NSString *filename;
+   
+}
+@property (nonatomic, assign) ABAddressBookRef addressBookRef;
+
+@end
+
+@implementation AddressBookViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        self.title = @"添加";
+        
+        CFErrorRef error;
+        _addressBookRef = ABAddressBookCreateWithOptions(NULL, &error);
+    }
+    return self;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    if (netStatus != 0) {
+        [self showHud:@"正在搜索通讯录..."];
+    }
+
+    self.fname = [NSMutableArray array];
+     self.view.backgroundColor = [UIColor whiteColor];
+    ABAddressBookRequestAccessWithCompletion(self.addressBookRef, ^(bool granted, CFErrorRef error) {
+        if (granted) {
+            
+            
+
+            dispatch_async(dispatch_get_main_queue(), ^{
+                _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, KScreenWidth, KScreenHeight-64) style:UITableViewStylePlain];
+                _tableView.backgroundColor = [UIColor clearColor];
+                _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+                _tableView.delegate = self;
+                _tableView.dataSource = self;
+                _tableView.rowHeight = 50;
+                UISearchBar *searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 44)];
+                searchBar.placeholder = @"搜索";
+                searchBar.delegate = self;
+                _tableView.tableHeaderView = searchBar;
+                [self.view addSubview:_tableView];
+                [self getContactsFromAddressBook];
+                
+            });
+        } else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self hideHud];
+                UIImageView *imageView = [[UIImageView alloc]initWithFrame:CGRectMake(self.view.frame.size.width*0.4,self.view.frame.size.height*0.2,self.view.frame.size.width*0.2 , self.view.frame.size.height*0.15)];
+                imageView.image = [UIImage imageNamed:@"book"];
+                [self.view addSubview:imageView];
+                
+                UILabel *labelAlert = [[UILabel alloc]initWithFrame:CGRectMake(self.view.frame.size.width*0.2, self.view.frame.size.width*0.6, self.view.frame.size.width*0.6,60)];
+                labelAlert.textAlignment = NSTextAlignmentCenter;
+                labelAlert.font = [UIFont systemFontOfSize:13];
+                labelAlert.text = @"要启用通讯录,请先进入手机的'设置->隐私->通讯录'开启授权.";
+                labelAlert.numberOfLines = 0;
+                [self.view addSubview:labelAlert];
+                 });
+        }
+    });
+   
+
+    // 1. 创建一个plist文件
+    NSArray *paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES);
+    NSString *path=[paths objectAtIndex:0];
+    filename = [path stringByAppendingPathComponent:@"addressBook.plist"];
+}
+
+
+- (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText
+{
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF CONTAINS  [cd] %@", searchText];
+    NSArray *tempArr = [nameArray filteredArrayUsingPredicate:predicate];
+    NSMutableArray *tempData = [NSMutableArray array];
+    if (tempArr.count>0) {
+        for (int i = 0; i<tempArr.count; i++) {
+            NSString *name = tempArr[i];
+            for (NSDictionary *dic in self.fname) {
+                if ([name isEqualToString:[dic objectForKey:@"name1"]]) {
+                    [tempData addObject:dic];
+                }
+            }
+        }
+        
+    }
+    self.filterData = tempData;
+    if (searchText.length == 0) {
+        self.filterData = self.fname;
+    }
+    
+    [_tableView reloadData];
+}
+-(void)getContactsFromAddressBook
+{
+    CFErrorRef error = NULL;
+    self.contacts = [[NSMutableArray alloc]init];
+    
+    ABAddressBookRef addressBook = ABAddressBookCreateWithOptions(NULL, &error);
+    if (addressBook) {
+        NSArray *allContacts = (__bridge_transfer NSArray*)ABAddressBookCopyArrayOfAllPeople(addressBook);
+        NSMutableArray *mutableContacts = [NSMutableArray arrayWithCapacity:allContacts.count];
+        NSUInteger i = 0;
+        arr = [NSMutableArray array];
+
+        for (i = 0; i<[allContacts count]; i++)
+        {
+            AddressBookModel *contact = [[AddressBookModel alloc] init];
+            ABRecordRef contactPerson = (__bridge ABRecordRef)allContacts[i];
+            contact.recordId = ABRecordGetRecordID(contactPerson);
+            
+            // Get first and last names
+            NSString *firstName = (__bridge_transfer NSString*)ABRecordCopyValue(contactPerson, kABPersonFirstNameProperty);
+            NSString *lastName = (__bridge_transfer NSString*)ABRecordCopyValue(contactPerson, kABPersonLastNameProperty);
+            
+            // Set Contact properties
+            contact.firstName = firstName;
+            contact.lastName = lastName;
+            
+            // Get mobile number
+            ABMultiValueRef phonesRef = ABRecordCopyValue(contactPerson, kABPersonPhoneProperty);
+            contact.phone = [self getMobilePhoneProperty:phonesRef];
+            NSString *s = [contact.phone stringByReplacingOccurrencesOfString:@"-" withString:@""];
+             NSLog(@"----------------------------%@",s);
+    
+            //拼接名字
+            if (contact.lastName == nil) {
+                contact.lastName = @".";
+            }
+            if (contact.firstName == nil) {
+                contact.firstName = @".";
+            }
+            NSString *name = [NSString stringWithFormat:@"%@%@",contact.lastName,contact.firstName];
+            //封装发送的内容
+            NSMutableDictionary *d = [NSMutableDictionary dictionary];
+            if (s) {
+                [d setObject:s forKey:@"number"];
+                [d setObject:name forKey:@"name"];
+            }
+            else
+           {
+                [d setObject:name forKey:@"name"];
+            }
+       
+            [arr addObject:d];
+           
+            NSLog(@"a>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>%@",arr);
+            
+            if(phonesRef) {
+                CFRelease(phonesRef);
+            }
+            
+            // Get image if it exists
+            NSData  *imgData = (__bridge_transfer NSData *)ABPersonCopyImageData(contactPerson);
+            contact.image = [UIImage imageWithData:imgData];
+            if (!contact.image) {
+                contact.image = [UIImage imageNamed:@"icon-avatar-60x60"];
+            }
+            
+            [mutableContacts addObject:contact];
+        }
+
+        
+        if(addressBook) {
+            CFRelease(addressBook);
+        }
+        
+        self.contacts = [NSArray arrayWithArray:mutableContacts];
+        [_tableView reloadData];
+      
+    }
+    else
+    {
+        NSLog(@"Error");
+        
+    }
+    NSData *data64 = [NSJSONSerialization dataWithJSONObject:arr options:NSJSONWritingPrettyPrinted error:nil];
+    NSString *s64 = [AddressBookViewController encodeBase64Data:data64];
+    //上传通讯录
+    [self post:s64];
+    
+}
+//base64加密
++ (NSString*)encodeBase64Data:(NSData*)data {
+    
+    data = [GTMBase64 encodeData:data];
+    
+    NSString *base64String = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding] ;
+    
+    return base64String;
+    
+}
+//base64解码
++ (NSString*)decodeBase64Data:(NSData*)data {
+    
+    data = [GTMBase64 decodeData:data];
+    
+    NSString *base64String = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding] ;
+    
+    return base64String;
+    
+}
+-(void)post:(NSString *)s
+{
+   
+    NSData *data = [s dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:YES];
+    if (netStatus != 0) {
+        NSData *tempUserData = [[NSUserDefaults standardUserDefaults] objectForKey:@"MyUserInfo"];
+        NSMutableDictionary *tempDic = [NSJSONSerialization JSONObjectWithData:tempUserData options:NSJSONReadingMutableContainers error:nil];
+        NSString *useid = [tempDic objectForKey:@"id"];
+    NSString *str = [NSString stringWithFormat:@"http://api.wetime.cn/WeiXiao/api/v1/user/telNumber/security/%@",useid];
+    NSURL *url = [NSURL URLWithString:str];
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc]initWithURL:url cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:10];
+    [request setHTTPMethod:@"POST"];
+    [request setHTTPBody:data];
+    [request setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+    NSData *received = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
+
+    NSString *s64 = [AddressBookViewController decodeBase64Data:received];
+ 
+    NSData *dataa = [s64 dataUsingEncoding:NSUTF8StringEncoding];
+    NSArray *tempArr = [NSJSONSerialization JSONObjectWithData:dataa options:NSJSONReadingMutableContainers error:nil];
+    for (NSDictionary *dd in tempArr) {
+        NSString *ss = [dd objectForKey:@"name"];
+        NSString *st = [dd objectForKey:@"status"];
+        NSString *sn = [dd objectForKey:@"number"];
+        NSMutableDictionary *d = [NSMutableDictionary dictionary];
+        [d setObject:ss forKey:@"name1"];
+        [d setObject:st forKey:@"status1"];
+        [d setObject:sn forKey:@"phone1"];
+        [self.fname addObject:d];
+    }
+    
+        NSString *jsonString = [self.fname JSONString];
+        [jsonString writeToFile:filename atomically:YES encoding:NSUTF8StringEncoding error:nil];
+       
+        self.filterData = self.fname;
+    }
+    if (netStatus == 0) {
+        NSString *addressBook = [[NSString alloc]initWithContentsOfFile:filename encoding:NSUTF8StringEncoding error:nil];
+        //读取本地存储通讯录
+        NSData *datass = [addressBook dataUsingEncoding:NSUTF8StringEncoding];
+        self.filterData = [NSJSONSerialization JSONObjectWithData:datass options:NSJSONReadingMutableContainers error:nil];
+    }
+     nameArray = [NSMutableArray array];
+    for (NSDictionary *dic in self.fname)
+    {
+        [nameArray addObject:[dic objectForKey:@"name1"]];
+    }
+    
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [_tableView reloadData];
+        _tableView.separatorStyle = UITableViewCellSeparatorStyleSingleLine;
+        [self hideHud];
+    });
+}
+- (NSString *)getMobilePhoneProperty:(ABMultiValueRef)phonesRef
+{
+    for (int i=0; i < ABMultiValueGetCount(phonesRef); i++) {
+        CFStringRef currentPhoneLabel = ABMultiValueCopyLabelAtIndex(phonesRef, i);
+        CFStringRef currentPhoneValue = ABMultiValueCopyValueAtIndex(phonesRef, i);
+        
+        if(currentPhoneLabel) {
+            if (CFStringCompare(currentPhoneLabel, kABPersonPhoneMobileLabel, 0) == kCFCompareEqualTo) {
+                return (__bridge NSString *)currentPhoneValue;
+            }
+            
+            if (CFStringCompare(currentPhoneLabel, kABHomeLabel, 0) == kCFCompareEqualTo) {
+                return (__bridge NSString *)currentPhoneValue;
+            }
+        }
+        if(currentPhoneLabel) {
+            CFRelease(currentPhoneLabel);
+        }
+        if(currentPhoneValue) {
+            CFRelease(currentPhoneValue);
+        }
+    }
+    
+    return nil;
+}
+
+-(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return 1;
+}
+
+-(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+  
+    return self.filterData.count;
+      
+  
+    
+}
+
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+   
+    static NSString *identifier = @"identifier";
+    addressBookTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier];
+    if (cell == nil) {
+        cell = [[addressBookTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
+        
+       
+    }
+    
+    cell.myDic = self.filterData[indexPath.row];
+   
+    return cell;
+}
+
+
+
+-(void)backAction{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+- (void) alertWithTitle:(NSString *)title msg:(NSString *)msg {
+    
+    
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
+                                                    message:msg
+                                                   delegate:self
+                                          cancelButtonTitle:nil
+                                          otherButtonTitles:@"确定", nil];
+    
+    [alert show];  
+    
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    if (self.isViewLoaded && !self.view.window)// 是否是正在使用的视图
+    {
+        // Add code to preserve data stored in the views that might be
+        // needed later.
+        // Add code to clean up other strong references to the view in
+        // the view hierarchy.
+        self.tableView = nil;
+        self.view = nil;// 目的是再次进入时能够重新加载调用viewDidLoad函数
+    }
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

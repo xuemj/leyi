@@ -1,0 +1,45 @@
+//
+//  IndexTableViewCell.h
+//  PictureSaying
+//
+//  Created by tutu on 14/12/8.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "IndexModel.h"
+#import "MyViewController.h"
+
+@interface IndexTableViewCell : UITableViewCell<UIAlertViewDelegate>
+{
+    __weak IBOutlet UIView *_bgView;
+    
+    __weak IBOutlet UIImageView *_imageView;
+    __weak IBOutlet UILabel *_titleLabel;
+    
+    __weak IBOutlet UILabel *_contentLabel;
+    
+    __weak IBOutlet UILabel *_dateLabel;
+    
+    __weak IBOutlet UIButton *_commentButton;
+    
+    __weak IBOutlet UIButton *_shareButton;
+    __weak IBOutlet UILabel *_zanCountLabel;
+    
+    __weak IBOutlet UILabel *_commetCountLabel;
+    
+    
+    UIButton *writeButton;
+    UIButton *deleteButton;
+    int i;
+   
+}
+@property (weak, nonatomic) IBOutlet UIButton *zanButton;
+
+@property(nonatomic, assign)BOOL isSelected;
+@property(nonatomic, assign)BOOL isMine;
+@property(nonatomic,retain)IndexModel *model;
+@property(nonatomic,strong)UIView *v;
+@property(nonatomic,strong)UIView *lv;
+@property(nonatomic, retain)NSNumber *row;
+@end

@@ -1,0 +1,291 @@
+////
+////  PhotoViewController.m
+////  PictureSaying
+////
+////  Created by tutu on 14/12/15.
+////  Copyright (c) 2014年 tutu. All rights reserved.
+////  亲人相册
+//
+//#import "PhotoViewController.h"
+//#import "DebugBigViewController.h"
+//#import "WhoCanLookViewController.h"
+//#import "LoverViewController.h"
+//#import <AssetsLibrary/AssetsLibrary.h>
+//#import "DataService.h"
+//#import "UIImageView+WebCache.h"
+//#import "UIImage+Compress.h"
+//#import "PhotoCell.h"
+//
+//@interface PhotoViewController ()
+//{
+//    NSString *identifier;
+//    UILabel *tipLabel;
+//}
+//@end
+//
+//@implementation PhotoViewController
+//
+//#pragma mark - LoadView
+//- (void)viewDidLoad {
+//    [super viewDidLoad];
+//    self.title = @"亲人的照片";
+//    SDImageCache *ic = [SDImageCache sharedImageCache];
+//    ic.maxCacheSize = 100;
+//    ic.maxMemoryCost = 10;
+//    ic.maxCacheAge = 120;
+//    UIButton *leftButton = [UIButton buttonWithType:UIButtonTypeCustom];
+//    leftButton.frame = CGRectMake(0, 0, 30, 20);
+//    [leftButton setImage:[UIImage imageNamed:@"设置"] forState:UIControlStateNormal];
+//    UIBarButtonItem *leftBarButton = [[UIBarButtonItem alloc] initWithCustomView:leftButton];
+//    [leftButton addTarget:self action:@selector(leftAction:) forControlEvents:UIControlEventTouchUpInside];
+//    self.navigationItem.leftBarButtonItem = leftBarButton;
+//    
+//    UICollectionViewFlowLayout *flowLayout = [[UICollectionViewFlowLayout alloc]init];
+//    flowLayout.itemSize = CGSizeMake(93*KScreenWidth/320, 93*KScreenWidth/320);
+//    NSLog(@"%f",93*KScreenWidth/320);
+//    flowLayout.scrollDirection = UICollectionViewScrollDirectionVertical;
+//    flowLayout.minimumInteritemSpacing = 0;
+////    flowLayout.sectionInset = UIEdgeInsetsMake(20, 10, 20, 10);
+//    flowLayout.sectionInset = UIEdgeInsetsMake(0, 10, 0, 10);
+//    collectionView1 = [[UICollectionView alloc]initWithFrame:CGRectMake(0, 0, KScreenWidth, KScreenHeight-64-49) collectionViewLayout:flowLayout];
+//    collectionView1.backgroundColor = [UIColor whiteColor];
+//    [collectionView1 registerClass:[UICollectionReusableView class] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"Identifierhehe"];
+//    [collectionView1 registerClass:[UICollectionReusableView class] forSupplementaryViewOfKind:UICollectionElementKindSectionFooter withReuseIdentifier:@"Identifiefffff"];
+//    flowLayout.headerReferenceSize = CGSizeMake(100, 50);
+//    flowLayout.footerReferenceSize = CGSizeMake(100, 30);
+//    identifier = @"sharedItem";
+//    [collectionView1 registerClass:[PhotoCell class] forCellWithReuseIdentifier:identifier];
+//    collectionView1.dataSource = self;
+//    collectionView1.delegate = self;
+//    [self.view addSubview:collectionView1];
+//    
+//    UIRefreshControl *refreshCtrl = [[UIRefreshControl alloc] init];
+//    refreshCtrl.tintColor = rgb(127, 127, 127, 1);
+//    refreshCtrl.backgroundColor = [UIColor colorWithRed:0.899 green:0.918 blue:0.880 alpha:1.000];
+//    refreshCtrl.attributedTitle = [[NSAttributedString alloc] initWithString:@"正在刷新..."];
+//    [refreshCtrl addTarget:self action:@selector(refreshNewData:) forControlEvents:UIControlEventValueChanged];
+//    [collectionView1 addSubview:refreshCtrl];
+//    
+//    tipLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, KScreenHeight+50, KScreenWidth-40, 30)];
+//    tipLabel.alpha = .75;
+//    tipLabel.backgroundColor = [UIColor blackColor];
+//    tipLabel.textAlignment = 1;
+//    tipLabel.font = [UIFont systemFontOfSize:16.0];
+//    tipLabel.textColor = [UIColor whiteColor];
+//    tipLabel.layer.cornerRadius = 5;
+//    tipLabel.layer.masksToBounds = YES;
+//    [self.view addSubview:tipLabel];
+//    COllViewMut = [NSMutableArray array];
+//    //先从服务器请求图片信息数目；
+//    NSData *tempUserData = [[NSUserDefaults standardUserDefaults] objectForKey:@"MyUserInfo"];
+//    NSDictionary *tempDic = [NSJSONSerialization JSONObjectWithData:tempUserData options:NSJSONReadingMutableContainers error:nil];
+//    NSLog(@"UserInfo ---------- %@",tempDic);
+//    NSMutableDictionary *param = [NSMutableDictionary dictionary];
+//    [param setObject:[tempDic objectForKey:@"usn"] forKey:@"accountUsn"];
+//    NSString *urlstring = [NSString stringWithFormat:@"/WeiXiaoAlbum/api/v1/album/shared/0/10/"];
+//    NSLog(@"%@",urlstring);
+//    [DataService requestWithURL:urlstring params:param httpMethod:@"GET" block1:^(id result) {
+//        NSLog(@"%@",result);
+//        NSArray *arrrA = result;
+//        if (arrrA.count>0) {
+//            for (NSDictionary *diccc  in arrrA) {
+//                _IdChuanZhi  =  [diccc objectForKey:@"id"];
+//                [COllViewMut addObject:diccc];
+//            }
+//            [collectionView1 reloadData];
+//        }else{
+//            tipLabel.hidden = NO;
+//            [UIView transitionWithView:self.view duration:0.5 options:UIViewAnimationOptionCurveEaseIn animations:^{
+//                tipLabel.text = @"还没有好友给您分享照片哦！";
+//                CGRect rect = tipLabel.frame;
+//                rect.origin.y = KScreenHeight-180;
+//                tipLabel.frame = rect;
+//            } completion:nil];
+//            [self performSelector:@selector(hideTip) withObject:nil afterDelay:3];
+//        }
+//    }];
+//    //Do any additional setup after loading the view, typically from a nib.
+//}
+//
+//-(void)refreshNewData:(UIRefreshControl *)rc{
+//    [self performSelector:@selector(endLoadData:) withObject:rc afterDelay:3];
+//}
+//
+//-(void)endLoadData:(UIRefreshControl *)rc{
+//    [rc endRefreshing];
+//}
+//
+//-(void)hideTip{
+//    [UIView animateWithDuration:1.0 animations:^{
+//        tipLabel.hidden = YES;
+//    }];
+//}
+//
+//- (void)flushCache
+//{
+//    [SDWebImageManager.sharedManager.imageCache clearMemory];
+//    [SDWebImageManager.sharedManager.imageCache clearDisk];
+//}
+//
+//-(void)leftAction:(UIButton *)btn{
+//    [self.mmDrawViewController toggleDrawerSide:MMDrawerSideLeft animated:YES completion:^(BOOL finished) {
+//    }];
+//}
+//
+//#pragma mark - ViewAction
+//-(void)viewDidAppear:(BOOL)animated{
+//    [super viewDidAppear:animated];
+//    clearTimer = [NSTimer scheduledTimerWithTimeInterval:60 target:self selector:@selector(flushCache) userInfo:nil repeats:YES];
+//    //开启MMDrawer菜单
+//    [self.mmDrawViewController setOpenDrawerGestureModeMask:MMOpenDrawerGestureModeAll];
+//}
+//
+//- (void)viewWillDisappear:(BOOL)animated
+//{
+//    [super viewWillDisappear:animated];
+//    [clearTimer invalidate];
+//    //禁止MMDrawer菜单
+//    [self.mmDrawViewController setOpenDrawerGestureModeMask:MMOpenDrawerGestureModeNone];
+//}
+//
+//#pragma mark - MakeColleCtionView
+//- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
+//    NSString *pa = [[[COllViewMut[indexPath.section] objectForKey:@"photos"]objectAtIndex:indexPath.row] objectForKey:@"path"];
+//    NSLog(@"%@",pa);
+//}
+//
+//- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
+//{
+//    if ([[COllViewMut[section] objectForKey:@"photos"] count] > 6) {
+//        return 6;
+//    }else{
+//        return [[COllViewMut[section] objectForKey:@"photos"] count];
+//    }
+//}
+//
+//- (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath
+//{
+//    if([kind isEqualToString:UICollectionElementKindSectionHeader]){
+//        UICollectionReusableView *headView = [collectionView dequeueReusableSupplementaryViewOfKind:kind withReuseIdentifier:@"Identifierhehe" forIndexPath:indexPath];
+//        UILabel *ianTiAlumb = [[UILabel alloc]init];
+//        ianTiAlumb.frame = CGRectMake(15, 0, 200, 50);
+//        ianTiAlumb.font = [UIFont systemFontOfSize:22.0];
+//        ianTiAlumb.text = [COllViewMut[indexPath.section] objectForKey:@"title"];
+//        [headView addSubview:ianTiAlumb];
+//        return headView;
+//    }else{
+//        UICollectionReusableView *footView = [collectionView dequeueReusableSupplementaryViewOfKind:kind withReuseIdentifier:@"Identifiefffff" forIndexPath:indexPath];
+//        UIView *viewFoor = [[UIView alloc]init];
+//        viewFoor.frame = CGRectMake(0, 0, KScreenWidth, 30);
+//        viewFoor.backgroundColor = [UIColor whiteColor];
+//        [self addLineWithWidth:0 withHeight:30 toView:viewFoor];
+//        [footView addSubview:viewFoor];
+//        
+//        UILabel *ianTiAlum = [[UILabel alloc]init];
+//        ianTiAlum.frame = CGRectMake(190, 0, 110, 30);
+//        ianTiAlum.textColor = rgb(241, 184, 15, 1);;
+//        ianTiAlum.text = [COllViewMut[indexPath.section] objectForKey:@"accountUsn"];
+//        [viewFoor addSubview:ianTiAlum];
+//        return  footView;
+//    }
+//}
+//
+//- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
+//{
+//    PhotoCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];
+//    if (indexPath.row == 5) {
+//        UIButton  *ButtonJia = [UIButton buttonWithType:UIButtonTypeCustom];
+//        ButtonJia.layer.cornerRadius = 5;
+//        ButtonJia.layer.masksToBounds = YES;
+//        ButtonJia.frame = CGRectMake(1, 1, cell.height-2, cell.height-2);
+//        ButtonJia.backgroundColor = [UIColor colorWithRed:0.899 green:0.918 blue:0.880 alpha:1.000];
+//        [ButtonJia setTitle:@"查看更多" forState:UIControlStateNormal];
+//        [ButtonJia setTitleColor:[UIColor colorWithWhite:0.657 alpha:1.000] forState:UIControlStateNormal];
+//        [ButtonJia addTarget:self action:@selector(TiaoZhuan:) forControlEvents:UIControlEventTouchUpInside];
+//        ButtonJia.tag = 100+indexPath.section;
+//        [cell.contentView addSubview:ButtonJia];
+//        cell.backgroundColor = [UIColor colorWithRed:1.000 green:0.758 blue:0.840 alpha:0.670];
+//    }else{
+//        NSArray *Tupian = [COllViewMut[indexPath.section] objectForKey:@"photos"];
+//        NSString *path = [Tupian[indexPath.row] objectForKey:@"path"];
+////        [img setImageWithURL:[NSURL URLWithString:lianjie]];
+//        cell.backgroundColor = [UIColor colorWithRed:1.000 green:0.662 blue:0.086 alpha:0.670];
+//        cell.path = path;
+//    }
+//    cell.layer.cornerRadius = 5;
+//    cell.layer.masksToBounds = YES;
+//    return cell;
+//}
+//
+//- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView{
+//    return  COllViewMut.count;
+//}
+//
+//#pragma mark - ButtonAction
+//-(void)TiaoZhuan:(UIButton *)bbb{
+//    NSString *idd = [[COllViewMut objectAtIndex:bbb.tag-100] objectForKey:@"id"];
+//    LoverViewController *zp = [[LoverViewController alloc]init];
+//    zp.IdHuoqu = idd;
+//    [self.navigationController pushViewController:zp animated:YES];
+//    [[NSNotificationCenter defaultCenter]postNotificationName:@"push" object:nil];
+//}
+//
+//-(void)rightAction:(UIButton *)bbb{
+//    NSLog(@"完成处理");
+//}
+//
+//+ (UIImage *)imageWithMaxSide:(CGFloat)length sourceImage:(UIImage *)imag
+//{
+//    CGFloat scale = [[UIScreen mainScreen] scale];
+//    CGSize imgSize = CWSizeReduce(imag.size, length);
+//    UIImage *img = nil;
+//    
+//    UIGraphicsBeginImageContextWithOptions(imgSize, YES, scale);
+//    
+//    [imag drawInRect:CGRectMake(0, 0, imgSize.width, imgSize.height) blendMode:kCGBlendModeNormal alpha:1.0];
+//    img = UIGraphicsGetImageFromCurrentImageContext();
+//    UIGraphicsEndImageContext();
+//    return img;
+//}
+//
+//static CGSize CWSizeReduce(CGSize size, CGFloat limit){
+//    CGFloat max = MAX(size.width, size.height);
+//    if (max < limit) {
+//        return size;
+//    }
+//    
+//    CGSize imgSize;
+//    CGFloat ratio = size.height / size.width;
+//    
+//    if (size.width > size.height) {
+//        imgSize = CGSizeMake(limit, limit*ratio);
+//    } else {
+//        imgSize = CGSizeMake(limit/ratio, limit);
+//    }
+//    
+//    return imgSize;
+//}
+//
+//#pragma mark - Line
+////线条功能处理
+//-(void)addLineWithWidth:(CGFloat)wid withHeight:(CGFloat)hei toView:(UIView *)parentView{
+//    UIImageView *lineIV = [[UIImageView alloc] initWithFrame:CGRectMake(wid, hei, KScreenWidth, 0.5)];
+//    lineIV.backgroundColor = [UIColor colorWithRed:221/255.0 green:221/255.0 blue:221/255.0 alpha:1];
+//    [parentView addSubview:lineIV];
+//    [parentView bringSubviewToFront:lineIV];
+//}
+//
+//-(void)didReceiveMemoryWarning{
+//    [super didReceiveMemoryWarning];
+//    if (self.isViewLoaded && !self.view.window)
+//    {
+//        BianTiAlumb = nil;
+//        collectionView1 = nil;
+//        self.view = nil;
+//        COllViewMut = nil;
+//        FrindArray = nil;
+//    }
+//   
+//}
+//
+//@end

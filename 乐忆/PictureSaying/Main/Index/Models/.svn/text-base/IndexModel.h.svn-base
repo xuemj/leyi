@@ -1,0 +1,27 @@
+//
+//  IndexModel.h
+//  PictureSaying
+//
+//  Created by tutu on 14/12/3.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "BaseModel.h"
+
+@interface IndexModel : BaseModel
+@property(nonatomic, copy)NSString *sid;
+@property(nonatomic,retain)NSString *content;
+@property(nonatomic,retain)NSString *dateString;
+@property(nonatomic,retain)NSString *zanCount;
+@property(nonatomic,retain)NSString *commentCount;
+@property(nonatomic, retain)NSString *isOdd;
+@property(nonatomic, retain)NSString *isZan;
+@property(nonatomic, retain)NSString *isOne;
+@property(nonatomic,retain)NSString *title;
+@property(nonatomic, copy)NSString *templateId;
+@property(nonatomic, copy)NSString *storyId;
+@property(nonatomic, copy)NSString *time;
+@property(nonatomic, copy)NSString *originalTime;
+@property(nonatomic, copy)NSString *descrip;
+@property(nonatomic, copy)NSString *image;
+@end

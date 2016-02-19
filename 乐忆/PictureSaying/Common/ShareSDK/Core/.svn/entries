@@ -1,0 +1,43 @@
+10
+
+dir
+12531
+svn://tuminghui@192.168.1.199/project/app/WeGroup/code/client/ios/PictureSaying_New/PictureSaying/Common/ShareSDK/Core
+svn://tuminghui@192.168.1.199/project
+
+
+
+2015-01-08T06:06:03.764507Z
+10410
+wangfangshuai
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1c8d8d5a-384c-4bb6-bd57-56eaaee70481
+
+Resource.bundle
+dir
+
+en.lproj
+dir
+
+ShareSDKCoreService.framework
+dir
+
+AGCommon.framework
+dir
+
+zh-Hans.lproj
+dir
+

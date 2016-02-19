@@ -1,0 +1,277 @@
+//
+//  BaseNaviagtionViewController.m
+//  SnsSend
+//
+//  Created by tutu on 14-10-29.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "BaseNaviagtionViewController.h"
+#import "MainViewController.h"
+
+#define KEY_WINDOW  [[UIApplication sharedApplication] keyWindow]
+
+@interface BaseNaviagtionViewController ()
+{
+    CGPoint startTouch;
+    BOOL isMoving;
+    
+    UIImageView *backImageView;
+}
+
+@property (nonatomic,strong) NSMutableArray *backImages;
+
+@end
+
+@implementation BaseNaviagtionViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+        
+        //监听主题切换的通知
+        self.backImages = [[NSMutableArray alloc] init];
+        self.canDragBack = YES;
+        
+        
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    //设置导航栏背景
+    //    [[UINavigationBar appearance] setBackgroundImage:[UIImage imageNamed:@"mask_titlebar"] forBarMetrics:UIBarMetricsDefault];
+    
+    //创建滑动手势,实现左右滑动视图
+    _pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(pan:)];
+    [_pan setEnabled:NO];
+    [self.view addGestureRecognizer:_pan];
+    [self loadImage];
+    
+    //7.0设置导航栏不透明
+    self.navigationBar.translucent = NO;
+}
+
+- (void)themeChangeAction:(NSNotification *)notification
+{
+    [self loadImage];
+}
+
+- (void)loadImage
+{
+//    //设置导航栏背景图片
+//    NSString *imgName = @"mask_titlebar.png";
+//    if (ios7) {
+//        imgName = @"mask_titlebar64@2x.png";
+//    }
+//    
+//    [self.navigationBar setBackgroundImage:image forBarMetrics:UIBarMetricsDefault];
+    
+    //设置导航栏上的标题颜色
+    //    UIColor *titleColor = [[ThemeManager shareInstace] getThemeColor:@"Mask_Title_color"];
+    
+    //    self.navigationBar.titleTextAttributes = @{UITextAttributeTextColor: titleColor,
+    //          UITextAttributeFont:[UIFont systemFontOfSize:18]};
+    
+}
+
+
+//抽屉式导航
+- (void)pan:(UIPanGestureRecognizer *)pan
+{
+    //手势开始
+    if (pan.state == UIGestureRecognizerStateBegan) {
+        if (self.viewControllers.count <= 1 || !self.canDragBack) {
+            return;
+        }
+        
+        isMoving = NO;
+        startTouch = [pan locationInView:KEY_WINDOW];
+    }
+    else if(pan.state == UIGestureRecognizerStateChanged) {
+        if (self.viewControllers.count <= 1 || !self.canDragBack) {
+            return;
+        }
+        
+        CGPoint moveTouch = [pan locationInView:KEY_WINDOW];
+        
+        if (!isMoving && moveTouch.x-startTouch.x > 10) {
+            backImageView.image = [self.backImages lastObject];
+            isMoving = YES;
+        }
+        
+        [self moveViewWithX:moveTouch.x - startTouch.x];
+        
+    }
+    else if(pan.state == UIGestureRecognizerStateEnded) {
+        if (self.viewControllers.count <= 1 || !self.canDragBack) {
+            return;
+        }
+        
+        CGPoint endTouch = [pan locationInView:KEY_WINDOW];
+        
+        if (endTouch.x - startTouch.x > 50) {
+            animationTime =.35 - (endTouch.x - startTouch.x) / KScreenWidth * .35;
+            [self popViewControllerAnimated:NO];
+        } else {
+            [UIView animateWithDuration:0.3 animations:^{
+                [self moveViewWithX:0];
+            } completion:^(BOOL finished) {
+                isMoving = NO;
+            }];
+        }
+    }
+    else if(pan.state == UIGestureRecognizerStateCancelled) {
+        if (self.viewControllers.count <= 1 || !self.canDragBack) {
+            return;
+        }
+        
+        [UIView animateWithDuration:0.3 animations:^{
+            [self moveViewWithX:0];
+        } completion:^(BOOL finished) {
+            isMoving = NO;
+        }];
+    }
+}
+
+//移动导航控制器的根视图self.view
+- (void)moveViewWithX:(float)x
+{
+    
+    x = x>KScreenWidth?KScreenWidth:x;
+    x = x<0?0:x;
+    
+    CGFloat height = KScreenHeight - 20;
+    if (ios7) {
+        height = KScreenHeight;
+    }
+    
+    CGRect frame = CGRectMake(0, 0, KScreenWidth, height);
+    frame.origin.x = x;
+    self.view.frame = frame;
+    
+    CGFloat m = 200.0 * x /KScreenWidth;
+    backImageView.left = m-200;
+}
+
+#pragma mark - override UINavigationController方法覆写
+- (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated
+{
+    UIImage *capture = [self capture];
+    
+    if (capture != nil) {
+        [self.backImages addObject:capture];
+    }
+    
+    if (self.viewControllers.count == 1) {
+        [_pan setEnabled:YES];
+    }
+    
+    [super pushViewController:viewController animated:NO];
+    
+    if (backImageView == nil) {
+        CGFloat height = KScreenHeight - 20;
+        if (ios7) {
+            height = KScreenHeight;
+        }
+        CGRect frame = CGRectMake(0, 0, KScreenWidth, height);
+        
+        backImageView = [[UIImageView alloc] initWithFrame:frame];
+    }
+    if (backImageView.superview == nil) {
+        [self.view.superview insertSubview:backImageView
+                              belowSubview:self.view];
+    }
+    
+    if (self.viewControllers.count == 1) {
+        return;
+    }
+    
+    backImageView.image = [self.backImages lastObject];
+    
+    [self moveViewWithX:KScreenWidth];
+    [UIView animateWithDuration:.25 animations:^{
+        [self moveViewWithX:0];
+    } completion:^(BOOL finished) {
+        backImageView.left = -200;
+    }];
+}
+
+- (UIViewController *)popViewControllerAnimated:(BOOL)animated {
+    if (animated == YES)
+    {
+        animationTime = .25;
+    }
+    if (self.viewControllers.count == 2) {
+        [_pan setEnabled:NO];
+    }
+    
+    [UIView animateWithDuration:animationTime animations:^{
+        [self moveViewWithX:KScreenWidth];
+        NSLog(@"viewController ==== %d",self.viewControllers.count);
+        if (self.viewControllers.count == 2) {
+            [[NSNotificationCenter defaultCenter]postNotificationName:@"back" object:nil];
+        }
+    } completion:^(BOOL finished) {
+        CGRect frame = CGRectMake(0, 0, KScreenWidth, KScreenHeight);
+        frame.origin.x = 0;
+        self.view.frame = frame;
+        
+        //先导航控制器，再移除图片
+        [super popViewControllerAnimated:NO];
+        
+        [self.backImages removeLastObject];
+        backImageView.image = [self.backImages lastObject];
+        
+        CFRunLoopStop(CFRunLoopGetCurrent());
+    }];
+    
+    CFRunLoopRun();
+    
+    return nil;
+}
+
+- (MainViewController *)mainViewController
+{
+    
+    UIResponder *next = self.nextResponder;
+    
+    do {
+        
+        //判断响应者是否为MainViewController类型
+        if ([next isMemberOfClass:[MainViewController class]]) {
+            return (MainViewController *)next;
+        }
+        
+        next = next.nextResponder;
+        
+    }while(next != nil);
+    
+    return nil;
+}
+
+//获取当前屏幕视图的快照图片
+- (UIImage *)capture {
+    
+    UIView *view = self.mainViewController.view;
+    if (view == nil) {
+        NSLog(@"快照视图为空");
+        return nil;
+    }
+    
+    UIGraphicsBeginImageContextWithOptions(view.bounds.size, view.opaque, 0.0);
+    [view.layer renderInContext:UIGraphicsGetCurrentContext()];
+    
+    UIImage * img = UIGraphicsGetImageFromCurrentImageContext();
+    NSLog(@"%f,%f",img.size.height,img.size.width);
+    UIGraphicsEndImageContext();
+    
+    return img;
+}
+
+@end

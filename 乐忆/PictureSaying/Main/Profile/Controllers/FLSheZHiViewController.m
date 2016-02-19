@@ -1,0 +1,475 @@
+//
+//  FLSheZHiViewController.m
+//  SheZhi
+//
+//  Created by tutu on 14-12-4.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//  设置
+
+#import "FLSheZHiViewController.h"
+#import "PictureViewController.h"
+#import "AppDelegate.h"
+#import "FLDengLuViewController.h"
+#import "BaseNaviagtionViewController.h"
+#import "FLViewController.h"
+#import "AboutBasinoViewController.h"
+#import "MobClick.h"
+#import "APService.h"
+#define rgb(r,g,b,a) [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a]
+@interface FLSheZHiViewController ()<UIAlertViewDelegate>
+
+@end
+
+@implementation FLSheZHiViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    self.title = @"设置";
+    self.view.backgroundColor = [UIColor colorWithRed:240/255.0 green:240/255.0 blue:240/255.0 alpha:1];
+    [self drawTableView];
+    but = [UIButton buttonWithType:UIButtonTypeCustom];
+    but.frame = CGRectMake(10, 420-100, KScreenWidth-20, 50);
+    //236 75 86 1
+    but.backgroundColor = rgb(236, 75, 86, 1);
+    [but setTitle:@"退出当前登录" forState:UIControlStateNormal];
+    [but addTarget:self action:@selector(logoutAction:) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:but];
+    
+    UIButton *leftBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    leftBtn.frame = CGRectMake(0, 0, 48, 20);
+    leftBtn.showsTouchWhenHighlighted = YES;
+    [leftBtn setImage:[UIImage imageNamed:@"back"] forState:UIControlStateNormal];
+    [leftBtn addTarget:self action:@selector(backAction) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:leftBtn];
+//    NSInteger ter = [[SDImageCache sharedImageCache]getDiskCount];
+//    NSLog(@"ter%d",ter);
+ 
+    [self gengxinAction];
+}
+
+-(void)logoutAction:(UIButton *)btn{
+    UIAlertView *logoutAlert = [[UIAlertView alloc] initWithTitle:@"退出登录" message:@"确定退出乐忆么？" delegate:self cancelButtonTitle:@"留在乐忆" otherButtonTitles:@"残忍退出", nil];
+    logoutAlert.tag = 101;
+    [logoutAlert show];
+    [MobClick event:@"tuichudenglu"];
+}
+
+-(void)backAction{
+    
+    if (self.navigationController.viewControllers.count>1) {
+        [self.navigationController popViewControllerAnimated:YES];
+    }else{
+        [self dismissViewControllerAnimated:YES completion:^{
+            
+        }];
+    }
+}
+
+//创建tableView处理
+-(void)drawTableView{
+    tview = [[UITableView alloc] initWithFrame:CGRectMake(2, 0, KScreenWidth, 380) style:UITableViewStyleGrouped];
+    tview.showsHorizontalScrollIndicator = NO;
+    tview.showsVerticalScrollIndicator = NO;
+    tview.scrollEnabled = NO;
+    [tview setDelegate:self];
+    [tview setDataSource:self];
+    [self.view addSubview:tview];
+}
+
+#pragma mark - UITableViewDelegate
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    return 44;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    if (section == 1) {
+        return 1;
+    }
+    return 2;
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return 2;
+}
+
+//TableView内容添加处理
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    static NSString *CellIdentifier = @"Cell";
+    
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    if (cell == nil) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+        switch (indexPath.section) {
+            case 0:
+                if(indexPath.row == 0)
+                {
+                    //清除缓存处理
+                    UILabel *lab1 = [[UILabel alloc]init];
+                    lab1.frame = CGRectMake(60, 0, 100, 44);
+                    lab1.text = @"清除缓存";
+                    [cell.contentView addSubview:lab1];
+                    UIImageView *img = [[UIImageView alloc]init];
+                    img.frame = CGRectMake(20, 11, 25, 25);
+                    [img setImage:[UIImage imageNamed:@"image1ee.png"]];
+                    [cell.contentView addSubview:img];
+                    
+                    UILabel *huanCun = [[UILabel alloc]init];
+                    huanCun.frame = CGRectMake(220, 7, 90, 30);
+//                    huanCun.text  = [NSString stringWithFormat:@"%.2fM",cacheSize];
+                    huanCun.text = @"正在计算...";
+                    huanCun.tag = 2014;
+                    [cell.contentView addSubview:huanCun];
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                }else {
+                    //检测更新处理
+//                    UILabel *lab2 = [[UILabel alloc]init];
+//                    lab2.frame = CGRectMake(60, 0, 100, 44);
+//                    lab2.text = @"检测更新";
+//                    [cell.contentView addSubview:lab2];
+//                    UIImageView *img1 = [[UIImageView alloc]init];
+//                    img1.frame = CGRectMake(20, 11, 25, 25);
+//                    [img1 setImage:[UIImage imageNamed:@"image2ee.png"]];
+//                    [cell.contentView addSubview:img1];
+//                    
+//                    UIImageView *cor = [[UIImageView alloc] initWithFrame:CGRectMake(cell.width-45, (cell.height-10)/2, 10, 10)];
+//                    cor.tag = 100;
+//                    cor.layer.cornerRadius = 5;
+//                    cor.layer.masksToBounds = YES;
+//                    cor.backgroundColor = [UIColor redColor];
+//                    [cell.contentView addSubview:cor];
+//                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+//                    if ([self.isNewest isEqualToString:@"yes"]) {
+//                        cor.hidden = NO;
+//                    }else{
+//                        cor.hidden = YES;
+//                    }
+                    UILabel *lab3 = [[UILabel alloc]init];
+                    lab3.frame = CGRectMake(60, 0, 100, 44);
+                    lab3.text = @"关于我们";
+                    [cell.contentView addSubview:lab3];
+                    UIImageView *img2 = [[UIImageView alloc]init];
+                    img2.frame = CGRectMake(20, 11, 25, 25);
+                    [img2 setImage:[UIImage imageNamed:@"image3ee.png"]];
+                    [cell.contentView addSubview:img2];
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                }
+                break;
+//                }else{
+//                    //关于我们处理
+//                    UILabel *lab3 = [[UILabel alloc]init];
+//                    lab3.frame = CGRectMake(60, 0, 100, 44);
+//                    lab3.text = @"关于我们";
+//                    [cell.contentView addSubview:lab3];
+//                    UIImageView *img2 = [[UIImageView alloc]init];
+//                    img2.frame = CGRectMake(20, 11, 25, 25);
+//                    [img2 setImage:[UIImage imageNamed:@"image3ee.png"]];
+//                    [cell.contentView addSubview:img2];
+//                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+//                }
+//                break;
+//            case 1:{
+//                //推送设置处理
+//                UILabel *lab4 = [[UILabel alloc]init];
+//                lab4.frame = CGRectMake(60, 0, 100, 44);
+//                lab4.text = @"推送设置";
+//                [cell.contentView addSubview:lab4];
+//                
+//                UIImageView *img3 = [[UIImageView alloc]init];
+//                img3.frame = CGRectMake(20, 11, 25, 25);
+//                [img3 setImage:[UIImage imageNamed:@"image4ee.png"]];
+//                [cell.contentView addSubview:img3];
+//                
+//                UISwitch *mySwitch = [[UISwitch alloc]init];
+//                mySwitch.frame = CGRectMake(KScreenWidth-70, 7, 100, 30);
+//                [mySwitch addTarget:self action:@selector(push:) forControlEvents:UIControlEventValueChanged];
+//                if (KScreenHeight == 480) {
+//                    
+//                }else{
+//                    BOOL setting = [[UIApplication sharedApplication] isRegisteredForRemoteNotifications];	//获得开关状态
+//                    [mySwitch setOn:setting animated:YES];	//设置开关状态
+//
+//                }
+//                [cell.contentView addSubview:mySwitch];
+//            }
+//                break;
+            case 1:
+            {
+                //意见反馈处理
+                UILabel *lab5 = [[UILabel alloc]init];
+                lab5.frame = CGRectMake(60, 0, 100, 44);
+                lab5.text = @"意见反馈";
+                [cell.contentView addSubview:lab5];
+                UIImageView *img4 = [[UIImageView alloc]init];
+                img4.frame = CGRectMake(20, 11, 25, 25);
+                [img4 setImage:[UIImage imageNamed:@"image5ee.png"]];
+                [cell.contentView addSubview:img4];
+                cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+            }
+                break;
+            default:
+                break;
+        }
+    }
+    return cell;
+}
+
+//-(void)push:(UISwitch *)sw{
+//    NSLog(@"sw.on%d",sw.isOn);
+//    
+//    if (sw.isOn == 1) {
+//        [APService
+//         registerForRemoteNotificationTypes:(UIUserNotificationTypeBadge |
+//                                             UIUserNotificationTypeSound |
+//                                             UIUserNotificationTypeAlert)
+//         categories:nil];
+//    }else{
+//        [[UIApplication sharedApplication] unregisterForRemoteNotifications];
+//    }
+//}
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    switch (indexPath.section) {
+        case 0:
+        {
+            if (indexPath.row == 0 ) {
+                //清除缓存事件处理
+                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"提示" message:@"确定要清除缓存吗?" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
+                [alert show];
+                [MobClick event:@"qingchuhuancun"];
+            }
+//            else if (indexPath.row == 1){
+//                //是不是有新版本处理
+//                NSLog(@"121212121212121212121212xxxxx");
+//                if ([self.isNewest isEqualToString:@"yes"]) {
+//                    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"更新" message:@"有新的版本更新，是否前往更新？" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"前往AppStore", nil];
+//                    alert.tag = 200;
+//                    [alert show];
+//                }else{
+//                    [self performSelectorOnMainThread:@selector(showAlert) withObject:Nil waitUntilDone:NO];
+//
+//                }
+//            }
+            else {
+                AboutBasinoViewController *aboutVC = [[AboutBasinoViewController alloc] init];
+                [self.navigationController pushViewController:aboutVC animated:YES];
+                [MobClick event:@"guanyuwomen"];
+            }
+        }
+            break;
+        case 1:
+        {
+            //意见反馈事件处理
+            PictureViewController *yijian = [[PictureViewController alloc]init];
+            [self.navigationController pushViewController:yijian animated:YES ];
+        }
+            break;
+        default:
+            break;
+    }
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
+    return 20;
+}
+
+-(void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (indexPath.row == 0) {
+//        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+//            [self countCacheSize];
+//        });
+        UILabel *label = (UILabel *)[cell.contentView viewWithTag:2014];
+        label.text = [NSString stringWithFormat:@"%.2fM",cacheSize];
+    }
+}
+
+-(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
+    if (alertView.tag == 200) {
+        if (buttonIndex == 1) {
+            NSURL *url = [NSURL URLWithString:@"https://itunes.apple.com/cn/app/qq/id977514016?mt=8"];
+            [[UIApplication sharedApplication]openURL:url];
+
+        }else{
+            
+         }
+   }else{
+    
+    if (alertView.tag == 101) {
+        if (buttonIndex == 0) {
+            
+        }else{
+            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            NSMutableDictionary *loginDic = [NSMutableDictionary dictionaryWithDictionary:[[NSUserDefaults standardUserDefaults] objectForKey:@"LoginDic"]];
+            //    NSMutableDictionary *loginDic = [defaults objectForKey:@"LoginDic"];
+            //    [loginDic removeObjectForKey:@"LOGIN"];
+            [loginDic setObject:@NO forKey:@"LOGIN"];
+            [defaults setObject:loginDic forKey:@"LoginDic"];
+            AppDelegate *DL = [UIApplication sharedApplication].delegate;
+            FLViewController *FLDENGLU = [[FLViewController alloc] init];
+            FLDENGLU.isFirstIn = @"no";
+            BaseNaviagtionViewController *NAV = [[BaseNaviagtionViewController alloc] initWithRootViewController:FLDENGLU];
+            DL.window.rootViewController = NAV;
+        }
+    }else{
+        if (buttonIndex == 0) {
+            
+        }else{
+//            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            [self clearFile];
+            [[SDImageCache sharedImageCache] clearDisk];
+            [self countCacheSize];
+//            });
+            [tview reloadData];
+        }
+      }
+        
+   }
+}
+
+//检测更新功能
+-(void)gengxinGongneng{
+    [self gengxinAction];
+}
+
+//更新版本功能处理
+-(void)gengxinAction{
+    NSString *urlstring = [NSString stringWithFormat:@"/WeiXiao/api/v1/version/getLastVersion/%@",@2];
+      [DataService requestWithURL:urlstring params:nil httpMethod:@"GET" block1:^(id result) {
+          NSString *str2 = [result objectForKey:@"version"];
+          if ([str2 isEqualToString:@"1.2"]) {
+          }else{
+              self.isNewest = @"yes";
+//              [tview reloadData];
+              NSIndexSet *set = [NSIndexSet indexSetWithIndex:0];
+              [tview reloadSections:set withRowAnimation:UITableViewRowAnimationFade];
+              
+         }
+      } failLoad:^(id result) {
+         
+       }];
+    
+}
+
+//Alert加入多线程处理
+//-(void)showAlert{
+//    [self hideHud];
+//    UIAlertView *Alter = [[UIAlertView alloc]initWithTitle:@"提示" message:@"您已经是最新版本了" delegate:nil cancelButtonTitle:@"知道了" otherButtonTitles:nil, nil];
+//    [Alter show];
+//}
+
+//清除缓存功能处理
+-(void)countCacheSize{
+//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        cacheSize = [self filePath];
+//    });
+}
+
+-(void)clearCacheSuccess
+{
+
+    [tview reloadData];
+}
+
+- (long long)fileSizeAtPath:(NSString *)filePath{
+    
+    NSFileManager *manager = [NSFileManager defaultManager];
+    
+    if ([manager fileExistsAtPath:filePath]){
+        return [[manager attributesOfItemAtPath:filePath error:nil] fileSize];
+    }
+    
+    return 0 ;
+    
+}
+
+- (float)folderSizeAtPath:(NSString *)folderPath{
+    
+    NSFileManager *manager = [NSFileManager defaultManager];
+    
+    if (![manager fileExistsAtPath:folderPath]) return 0;
+    
+    NSEnumerator *childFilesEnumerator = [[manager subpathsAtPath :folderPath] objectEnumerator];
+    
+    NSString *fileName;
+    
+    long long folderSize = 0 ;
+    
+    while ((fileName = [childFilesEnumerator nextObject]) != nil ){
+        
+        NSString * fileAbsolutePath = [folderPath stringByAppendingPathComponent :fileName];
+        
+        folderSize += [self fileSizeAtPath:fileAbsolutePath];
+    }
+//    static dispatch_once_t onceToken;
+//    dispatch_once(&onceToken, ^{
+//        dispatch_async(dispatch_get_main_queue(), ^{
+//            [tview reloadData];
+//        });
+//    });
+    
+    return folderSize/(1024.0 * 1024.0);
+}
+
+- (float)filePath
+{
+    NSString *cachPath = [NSSearchPathForDirectoriesInDomains( NSCachesDirectory,NSUserDomainMask,YES) firstObject];
+    return [self folderSizeAtPath:cachPath];
+}
+
+-(void)clearFile
+{
+    NSString *cachPath = [NSSearchPathForDirectoriesInDomains( NSCachesDirectory,NSUserDomainMask,YES) firstObject];
+    
+    NSArray *files = [[NSFileManager defaultManager] subpathsAtPath:cachPath];
+    for (NSString *p in files) {
+        
+        NSError *error = nil;
+        
+        NSString *path = [cachPath stringByAppendingPathComponent:p];
+        
+        if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
+            [[NSFileManager defaultManager] removeItemAtPath:path error:&error];
+        }
+    }
+    [ self performSelectorOnMainThread:@selector(clearCacheSuccess) withObject:nil waitUntilDone:YES ];
+}
+
+-(void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+//    [tview reloadData];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [self countCacheSize];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [tview reloadData];
+        });
+    });
+}
+
+-(void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+    if (self.isViewLoaded && !self.view.window)
+    {
+        but = nil;
+        tview = nil;
+        self.view = nil;
+    }
+}
+
+@end

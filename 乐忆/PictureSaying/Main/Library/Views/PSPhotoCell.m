@@ -1,0 +1,169 @@
+//
+//  PSPhotoCell.m
+//  PictureSaying
+//
+//  Created by tutu on 15/1/6.
+//  Copyright (c) 2015年 tutu. All rights reserved.
+//
+
+#import "PSPhotoCell.h"
+#import "UIImageView+WebCache.h"
+#import "NSString+Additions.h"
+#import "PSPhotoController.h"
+#import "PSMorePhotoController.h"
+#import "PSConfigs.h"
+
+#define Icon_Default    @"icon_default.png"
+
+@implementation PSPhotoCell
+
+- (void)awakeFromNib {
+    // Initialization code
+    
+    _leftImageView.userInteractionEnabled = YES;
+    _middleImageView.userInteractionEnabled = YES;
+    _rightImageView.userInteractionEnabled = YES;
+    
+    UITapGestureRecognizer *tap1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(leftImageTap:)];
+    [_leftImageView addGestureRecognizer:tap1];
+    
+    UITapGestureRecognizer *tap2 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(middleImageTap:)];
+    [_middleImageView addGestureRecognizer:tap2];
+    
+    UITapGestureRecognizer *tap3 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(rightImageTap:)];
+    [_rightImageView addGestureRecognizer:tap3];
+}
+
+-(void)leftImageTap:(UITapGestureRecognizer *)tap
+{
+    if (_leftImageView.image)
+    {
+        [self photoBrowserWithCurrentIndex:_baseIndex withSrcImageView:_leftImageView];
+    }
+}
+
+-(void)middleImageTap:(UITapGestureRecognizer *)tap
+{
+    if (_middleImageView.image)
+    {
+        [self photoBrowserWithCurrentIndex:_baseIndex+1 withSrcImageView:_middleImageView];
+    }
+}
+
+-(void)rightImageTap:(UITapGestureRecognizer *)tap
+{
+    if (_isHaveMore)
+    {
+        PSMorePhotoController *morePhotoC = [[PSMorePhotoController alloc] init];
+        morePhotoC.photoId = _photoInfo.photoId;
+        [((UIViewController *)_superVC).navigationController pushViewController:morePhotoC animated:YES];
+        [[NSNotificationCenter defaultCenter]postNotificationName:kPush object:nil];
+    }
+    else
+    {
+        if (_rightImageView.image)
+        {
+            [self photoBrowserWithCurrentIndex:_baseIndex+2 withSrcImageView:_rightImageView];
+        }
+    }
+}
+
+-(NSArray *)getImageViews
+{
+    return @[_leftImageView,_middleImageView,_rightImageView];
+}
+
+-(void)photoBrowserWithCurrentIndex:(NSInteger)currentIndex withSrcImageView:(UIImageView *)srcImageView
+{
+    if ([_superVC isKindOfClass:[PSPhotoController class]])
+    {
+        [_superVC photoBrowserShowWithPhotoInfo:_photoInfo withCurrentIndex:currentIndex withSrcImageView:srcImageView];
+    }
+    else if ([_superVC isKindOfClass:[PSMorePhotoController class]])
+    {
+        [_superVC photoBrowserShowWithMorePhotoInfo:_morePhotoInfo withCurrentIndex:currentIndex withSrcImageView:srcImageView];
+    }
+}
+
+-(void)setLeftItem:(PSPhotoItem *)leftItem withMiddleItem:(PSPhotoItem *)middleItem withRightItem:(PSPhotoItem *)rightItem isSectionTwo:(BOOL)isSectionTwo superVC:(id)superVC belongtoPhotoInfo:(id)photoInfo
+{
+    _superVC = superVC;
+    
+    if ([superVC isKindOfClass:[PSPhotoController class]])
+    {
+        _photoInfo = photoInfo;
+        _baseIndex = isSectionTwo?3:0;
+    }
+    else if ([superVC isKindOfClass:[PSMorePhotoController class]])
+    {
+        _morePhotoInfo = photoInfo;
+        
+        _baseIndex = [_morePhotoInfo.photos indexOfObject:leftItem];
+    }
+    
+    NSString *compressionString = kImage180;
+    if ([PSConfigs getIphoneType] <= IphoneType_6)
+    {
+        compressionString = kImage180;
+    }
+    else if ([PSConfigs getIphoneType] <= IphoneType_6plus)
+    {
+        compressionString = kImage180;
+    }
+    
+    NSString *leftPath = [PSConfigs getImageUrlPrefixWithSourcePath:leftItem.path];
+    leftPath = [leftPath stringByAppendingString:compressionString];
+    NSString *middlePath = [[PSConfigs getImageUrlPrefixWithSourcePath:middleItem.path] stringByAppendingString:compressionString];
+    if ([leftItem.path length] > 0)
+    {
+        [_leftImageView sd_setImageWithURL:[NSURL URLWithString:leftPath] placeholderImage:[UIImage imageNamed:Icon_Default]];
+    }
+    else
+    {
+        _leftImageView.image = nil;
+    }
+    
+    if ([middleItem.path length] > 0)
+    {
+        [_middleImageView sd_setImageWithURL:[NSURL URLWithString:middlePath] placeholderImage:[UIImage imageNamed:Icon_Default]];
+    }
+    else
+    {
+        _middleImageView.image = nil;
+    }
+    
+    _isHaveMore = NO;
+    if (isSectionTwo)
+    {
+        if (rightItem != nil)
+        {
+            _rightImageView.image = [UIImage imageNamed:@"showMore.png"];
+            _isHaveMore = YES;
+        }
+        else
+        {
+            _rightImageView.image = nil;
+        }
+    }
+    else
+    {
+        
+        NSString *rightPath = [[PSConfigs getImageUrlPrefixWithSourcePath:rightItem.path] stringByAppendingString:compressionString];
+        
+        if ([rightItem.path length] > 0)
+        {
+            [_rightImageView sd_setImageWithURL:[NSURL URLWithString:rightPath] placeholderImage:[UIImage imageNamed:Icon_Default]];
+        }
+        else
+        {
+            _rightImageView.image = nil;
+        }
+    }
+}
+
++(float)getHeight
+{
+    return 102;
+}
+
+@end

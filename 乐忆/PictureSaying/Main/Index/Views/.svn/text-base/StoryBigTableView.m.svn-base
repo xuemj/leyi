@@ -1,0 +1,118 @@
+//
+//  StoryBigTableView.m
+//  PictureSaying
+//
+//  Created by tutu on 14/12/19.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "StoryBigTableView.h"
+#import "DebugBigViewController.h"
+
+@implementation StoryBigTableView
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+        self.dataSource = self;
+        self.delegate = self;
+    }
+    return self;
+}
+
+-(void)awakeFromNib{
+    [super awakeFromNib];
+    self.dataSource = self;
+    self.delegate = self;
+
+}
+
+-(void)layoutSubviews{
+    [super layoutSubviews];
+    if (self.tag == 100) {
+        _refreshHeaderView.hidden = YES;
+        _refreshHeaderView = nil;
+    }
+}
+
+#pragma mark - UITableViewDataSource
+-(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return self.data.count;
+}
+
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    static NSString *identifier = @"debugbigCell";
+    DebugBigCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier];
+    if (cell == nil) {
+        cell = [[DebugBigCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
+        //        cell = [[IndexTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
+        cell.backgroundColor = rgb(241, 241, 241, 1);
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    }
+    cell.model = self.data[indexPath.row];
+    return cell;
+}
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    EventModel *model = self.data[indexPath.row];
+    float textHeight = 0.0;
+    for (int i = 0; i<model.pics.count; i++) {
+        if (![[model.pics[i] objectForKey:@"txt"] isKindOfClass:[NSNull class]]) {
+            CGSize size = [[model.pics[i] objectForKey:@"txt"] sizeWithFont:[UIFont systemFontOfSize:16.0] constrainedToSize:CGSizeMake(200, 1000)];
+            textHeight = textHeight+size.height;
+        }
+    }
+    NSLog(@"th = %f",textHeight);
+    
+    float cellHeight = (KScreenHeight-64-50)*model.pics.count;
+    NSLog(@"aaaa%f",cellHeight);
+    return cellHeight;
+}
+
+-(void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath{
+    EventModel *model = self.data[indexPath.row];
+    self.myViewController.title = model.title;
+    self.myViewController.eModel = model;
+    UIView *toolView = [tableView.superview viewWithTag:180];
+    UILabel *zanLabel = (UILabel *)[toolView viewWithTag:190];
+    UIButton *zanButton = (UIButton *)[toolView viewWithTag:200];
+    if ([model.isZan isEqualToString:@"0"]) {
+        zanButton.selected = YES;
+    }else{
+        zanButton.selected = NO;
+    }
+    zanLabel.text = model.favNum;
+    UILabel *commentLabel = (UILabel *)[toolView viewWithTag:195];
+    commentLabel.text = model.commentNum;
+}
+
+- (DebugBigViewController *)myViewController
+{
+    UIResponder *next = self.nextResponder;
+    do {
+        if ([next isMemberOfClass:[DebugBigViewController class]]) {
+            return (DebugBigViewController *)next;
+        }
+        
+        next = next.nextResponder;
+    } while (next != nil);
+    
+    return nil;
+}
+
+
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect {
+    // Drawing code
+}
+*/
+
+@end

@@ -1,0 +1,34 @@
+//
+//  DebugEventCell.h
+//  PictureSaying
+//
+//  Created by tutu on 14/12/19.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "EventModel.h"
+#import "MainModel.h"
+#import "DebugImageView.h"
+@interface DebugEventCell : UITableViewCell
+{
+    __weak IBOutlet UILabel *_titleLabel;
+    
+    __weak IBOutlet UILabel *_dateLabel;
+    __weak IBOutlet UIButton *_zanButton;
+    
+    __weak IBOutlet UIButton *_commentButton;
+    __weak IBOutlet UIButton *_shareButton;
+    
+    __weak IBOutlet UILabel *_zanCountLabel;
+    
+    __weak IBOutlet UILabel *_commentCountLabel;
+    DebugImageView *debugIV;
+}
+
+@property(nonatomic,strong) MainModel *indexModel;
+@property(nonatomic, retain)EventModel *model;
+@property(nonatomic, retain)NSString *storyId;
+@property(nonatomic, strong)UIViewController    *viewController;
+
+@end

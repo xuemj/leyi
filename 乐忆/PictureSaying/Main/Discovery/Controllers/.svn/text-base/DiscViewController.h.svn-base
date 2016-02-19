@@ -1,0 +1,23 @@
+//
+//  DiscViewController.h
+//  PictureSaying
+//
+//  Created by tutu on 15/1/26.
+//  Copyright (c) 2015年 tutu. All rights reserved.
+//
+
+#import "BaseViewController.h"
+#import "IndexModel.h"
+#import "IndexTableView.h"
+#import "CommentViewController.h"
+@interface DiscViewController : BaseViewController
+<BaseTableViewDelegate,CommentViewControllerDelegate>
+{
+    IndexTableView *_tableView;
+    IndexTableView *_tableView1;
+    UILabel *finishTipLabel;
+}
+
+@property(nonatomic, retain)NSMutableArray *newestData;
+@property(nonatomic, retain)NSMutableArray *hotestData;
+@end

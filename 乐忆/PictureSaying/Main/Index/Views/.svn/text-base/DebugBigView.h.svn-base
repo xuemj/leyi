@@ -1,0 +1,30 @@
+//
+//  DebugBigView.h
+//  PictureSaying
+//
+//  Created by tutu on 14/12/19.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface DebugBigView : UIView
+{
+    UIImageView *iv1;
+    UIImageView *iv2;
+    UIImageView *iv3;
+    UIImageView *iv4;
+    UIImageView *iv5;
+    UIImageView *iv11;
+    UIImageView *iv22;
+    UIImageView *iv33;
+    UIImageView *iv44;
+    UIImageView *iv55;
+    UILabel *lab1;
+    UILabel *lab2;
+    UILabel *lab3;
+    UILabel *lab4;
+    UILabel *lab5;
+}
+@property(nonatomic, retain)NSArray *pics;
+@end

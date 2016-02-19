@@ -1,0 +1,159 @@
+//
+//  DebugEventCell.m
+//  PictureSaying
+//
+//  Created by tutu on 14/12/19.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "DebugEventCell.h"
+#import "CommentViewController.h"
+#import "UIView+Additions.h"
+#import "PSConfigs.h"
+@implementation DebugEventCell
+
+- (void)awakeFromNib {
+    // Initialization code
+    [self _initViews];
+}
+
+-(void)_initViews{
+    _titleLabel.textColor = [UIColor blackColor];
+    _titleLabel.font = [UIFont systemFontOfSize:18.0];
+    _dateLabel.textColor = [UIColor orangeColor];
+    _dateLabel.font = [UIFont systemFontOfSize:15.0];
+    debugIV = [[DebugImageView alloc] initWithFrame:CGRectZero];
+    [self.contentView addSubview:debugIV];
+    
+    _zanCountLabel.textColor = rgb(137, 137, 137, 1);
+    _commentCountLabel.textColor = rgb(137, 137, 137, 1);
+    
+    [_zanButton setImage:[UIImage imageNamed:@"gray"] forState:UIControlStateNormal];
+    [_zanButton setImage:[UIImage imageNamed:@"red"] forState:UIControlStateSelected];
+}
+
+-(void)setModel:(EventModel *)model{
+    if (_model != model) {
+        _model = model;
+        [self setNeedsLayout];
+    }
+}
+
+-(void)layoutSubviews{
+    [super layoutSubviews];
+    _titleLabel.frame = CGRectMake(10, 10, self.width-20, 25);
+    _titleLabel.text = self.model.title;
+    
+    NSDate *date = [NSDate dateWithTimeIntervalSince1970:[self.model.time floatValue]/1000];
+    NSDateFormatter *df = [[NSDateFormatter alloc] init];
+    [df setDateFormat:@"yyyy-MM-dd"];
+    NSString *regStr = [df stringFromDate:date];
+    NSLog(@"dateStr = %@",regStr);
+    _dateLabel.frame = CGRectMake(_titleLabel.left, _titleLabel.bottom+10, KScreenWidth/2, 25);
+    _dateLabel.text = regStr;
+    _shareButton.frame = CGRectMake(KScreenWidth-35, _dateLabel.top, 20, 20);
+    _commentCountLabel.frame = CGRectMake(_shareButton.left-40, _dateLabel.top, 40, 20);
+    _commentCountLabel.text = _model.commentNum;
+    _commentButton.frame = CGRectMake(_commentCountLabel.left-25, _dateLabel.top, 35, 35);
+    [_commentButton setCenter_y:_dateLabel.center.y];
+    _zanCountLabel.frame = CGRectMake(_commentButton.left-40, _dateLabel.top, 40, 20);
+    _zanCountLabel.text = _model.favNum;
+    _zanButton.frame = CGRectMake(_zanCountLabel.left-25, _dateLabel.top, 20, 20);
+    if ([_model.isZan isEqualToString:@"0"]) {
+        _zanButton.selected = YES;
+    }else{
+        _zanButton.selected = NO;
+    }
+    debugIV.frame = CGRectMake(_titleLabel.left, _dateLabel.bottom+10, self.width-20, self.height-100);
+    NSLog(@"vvvvvv%f",self.height);
+    debugIV.pics = self.model.pics;
+    if ([self.model.favNum isEqualToString:@"0"]) {
+        _zanCountLabel.text = @"";
+    }else{
+        _zanCountLabel.text = self.model.favNum;
+    }
+    
+    if ([self.model.commentNum isEqualToString:@"0"]) {
+        _commentCountLabel.text = @"";
+    }else{
+        _commentCountLabel.text = self.model.commentNum;
+    }
+}
+
+- (IBAction)clickZanAcrion:(id)sender {
+//    CALayer *viewLayer=[sender layer];
+//    CABasicAnimation *animation=[CABasicAnimation animationWithKeyPath:@"transform"];
+//    animation.duration=0.05;
+//    animation.repeatCount = 5;
+//    animation.autoreverses=YES;
+    NSData *tempUserData = [[NSUserDefaults standardUserDefaults] objectForKey:@"MyUserInfo"];
+    NSDictionary *tempDic = [NSJSONSerialization JSONObjectWithData:tempUserData options:NSJSONReadingMutableContainers error:nil];
+    NSLog(@"UserInfo ---------- %@",tempDic);
+    [[PSConfigs shareConfigs] likeActionWithType:likeType_Event withZanButton:_zanButton withZanLabel:_zanCountLabel withIndexModel:_indexModel withEventModel:_model];
+//    if ([self.model.isZan isEqualToString:@"0"]) {
+//        NSInteger zanCount = [_zanCountLabel.text integerValue];
+//        _zanCountLabel.text = [NSString stringWithFormat:@"%d",zanCount-1];
+//        self.model.favNum = [NSString stringWithFormat:@"%d",zanCount-1];
+//        _zanButton.selected = NO;
+//        self.model.isZan = @"-1";
+//        NSString *storyUrl = [NSString stringWithFormat:@"/WeiXiaoFavOrHat/api/v1/story/%@/item/%@/fav/%@/del",self.storyId,self.model.eventId,[tempDic objectForKey:@"usn"]];
+//        [DataService requestWithURL:storyUrl params:nil httpMethod:@"POST" block:^(id result) {
+//            NSLog(@"呜呜~他不爱我%@",result);
+//        }];
+//        
+//    }else{
+//        NSInteger zanCount = [_zanCountLabel.text integerValue];
+//        _zanCountLabel.text = [NSString stringWithFormat:@"%d",zanCount+1];
+//        self.model.favNum = [NSString stringWithFormat:@"%d",zanCount+1];
+//        _zanButton.selected = YES;
+//        self.model.isZan = @"0";
+//        NSMutableDictionary *params = [NSMutableDictionary dictionary];
+//        [params setObject:[tempDic objectForKey:@"usn"] forKey:@"accountUsn"];
+//        NSString *storyUrl = [NSString stringWithFormat:@"/WeiXiaoFavOrHat/api/v1/story/%@/item/%@/fav",self.storyId,self.model.eventId];
+//        [DataService requestWithURL:storyUrl params:params httpMethod:@"POST" block:^(id result) {
+//            NSLog(@"有人点赞啦%@",result);
+//        }];
+//        
+//    }
+//    animation.fromValue=[NSValue valueWithCATransform3D:CATransform3DRotate(viewLayer.transform, -0.3, 0.0, 0.0, 0.3)];
+//    animation.toValue=[NSValue valueWithCATransform3D:CATransform3DRotate(viewLayer.transform, 0.3, 0.0, 0.0, 0.3)];
+//    [viewLayer addAnimation:animation forKey:@"wiggle"];
+}
+
+- (IBAction)commentAction:(id)sender {
+    CommentViewController *myEventComment = [[CommentViewController alloc] init];
+    myEventComment.delegate = self.viewController;
+    myEventComment.storyId = self.storyId;
+    myEventComment.eventId = self.model.eventId;
+    myEventComment.emodel = self.model;
+    [self.viewController.navigationController pushViewController:myEventComment animated:YES];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"push" object:nil];
+}
+
+-(UIViewController *)viewController{
+    UIResponder *next = self.nextResponder;
+    do {
+        if ([next isKindOfClass:[UIViewController class]]) {
+            return (UIViewController *)next;
+        }
+        next = next.nextResponder;
+    } while (next);
+    return nil;
+}
+
+- (IBAction)shareAction:(id)sender {
+    [PSConfigs shareConfigs].sid = self.model.eventId;
+    [PSConfigs shareConfigs].image = [self.model.pics[0] objectForKey:@"path"];
+    [PSConfigs shareConfigs].title = self.model.title;
+    [[PSConfigs shareConfigs] shareActionWithFromViewController:self.viewController];
+    
+}
+
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+@end

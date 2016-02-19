@@ -1,0 +1,177 @@
+//
+//  AppDelegate.m
+//  PictureSaying
+//
+//  Created by tutu on 14/12/3.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "AppDelegate.h"
+#import "MainViewController.h"
+#import "MMDrawerController.h"
+#import "LeftViewController.h"
+#import "IndexViewController.h"
+#import "MMExampleDrawerVisualStateManager.h"
+#import "BaseNaviagtionViewController.h"
+#import <TencentOpenAPI/QQApiInterface.h>
+#import <TencentOpenAPI/TencentOAuth.h>
+#import <QZoneConnection/ISSQZoneApp.h>
+#import "WXApi.h"
+#import "WeiboSDK.h"
+#import "FLViewController.h"
+#import <UIKit/UIKit.h>
+#import "GuideView.h"
+#import "PSConfigs.h"
+
+@interface AppDelegate ()
+
+@end
+
+@implementation AppDelegate
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    // Override point for customization after application launch.
+    
+    //Add a custom read-only cache path
+    NSString *bundledPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"CustomPathImages"];
+    [[SDImageCache sharedImageCache] addReadOnlyCachePath:bundledPath];
+    Reachability *reach = [Reachability reachabilityForInternetConnection];
+    if ([reach currentReachabilityStatus] == 0) {
+        NSLog(@"not network！！！！！not network！！！！not network！！！！！");
+    }
+
+    [self _initShare];
+    BOOL BL = [self _judgeLogin];
+    NSLog(@"%d",BL);
+    if(BL){
+        LeftViewController *leftVC = [[LeftViewController alloc] init];
+
+        MainViewController *mainVC = [[MainViewController alloc] init];
+    
+        MMDrawerController *drawerController = [[MMDrawerController alloc]
+                                             initWithCenterViewController:mainVC
+                                             leftDrawerViewController:leftVC
+                                             rightDrawerViewController:nil];
+    
+        //设置左右菜单的宽度
+        [drawerController setMaximumRightDrawerWidth:1];
+        [drawerController setMaximumLeftDrawerWidth:240];
+    
+        //设置手势操作的有效区域MMOpenDrawerGestureModeAll：所有区域
+        [drawerController setOpenDrawerGestureModeMask:MMOpenDrawerGestureModeAll];
+        [drawerController setCloseDrawerGestureModeMask:MMCloseDrawerGestureModeAll];
+    
+        //配置管理动画的block
+        [drawerController
+         setDrawerVisualStateBlock:^(MMDrawerController *drawerController, MMDrawerSide drawerSide, CGFloat percentVisible) {
+             MMDrawerControllerDrawerVisualStateBlock block;
+             block = [[MMExampleDrawerVisualStateManager sharedManager]
+                  drawerVisualStateBlockForDrawerSide:drawerSide];
+             if(block){
+                 block(drawerController, drawerSide, percentVisible);
+             }
+         }];
+    
+        self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+        // Override point for customization after application launch.
+        self.window.backgroundColor = [UIColor whiteColor];
+        [self.window makeKeyAndVisible];
+        self.window.rootViewController = drawerController;
+    }else{
+        FLViewController *flVC = [[FLViewController alloc] init];
+        BaseNaviagtionViewController *nav = [[BaseNaviagtionViewController alloc] initWithRootViewController:flVC];
+        self.window.rootViewController = nav;
+    }
+    [[PSConfigs shareConfigs] loadUserInfo];
+    NSLog(@"width = %f,height = %f",KScreenWidth,KScreenHeight);
+    return YES;
+}
+
+-(BOOL)_judgeLogin{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSMutableDictionary *loginDic = [defaults objectForKey:@"LoginDic"];
+    if ([[loginDic allValues] count] == 0) {
+        return NO;
+//        return YES;
+    }else if([[loginDic objectForKey:@"LOGIN"] isEqual:@1]){
+        return YES;
+    }else{
+<<<<<<< .mine
+        return NO;
+//        return YES;
+     }
+=======
+        return NO;
+//        return YES;
+ 
+    }
+>>>>>>> .r12403
+}
+
+-(void)_initShare{
+    [ShareSDK registerApp:@"4b2d9a4f1b3e"];
+    id<ISSQZoneApp> app =(id<ISSQZoneApp>)[ShareSDK getClientWithType:ShareTypeQQSpace];
+    [app setIsAllowWebAuthorize:YES];
+    //连接微信
+    [ShareSDK connectWeChatSessionWithAppId:@"wxf551d6b0b4995f75" appSecret:@"07b88fb89d66bf4e8297ff97deb86b7e" wechatCls:[WXApi class]];
+    //连接微信朋友圈
+    [ShareSDK connectWeChatTimelineWithAppId:@"wxf551d6b0b4995f75" wechatCls:[WXApi class]];
+    //连接qq
+    [ShareSDK connectQQWithQZoneAppKey:@"1103987471" qqApiInterfaceCls:[QQApiInterface class] tencentOAuthCls:[TencentOAuth class]];
+   
+    //连接qq空间
+    [ShareSDK connectQZoneWithAppKey:@"1103987471" appSecret:@"axM1t2pSLsdJmXeE" qqApiInterfaceCls:[QQApiInterface class] tencentOAuthCls:[TencentOAuth class]];
+    //添加新浪微博应用 注册网址 http://open.weibo.com
+    [ShareSDK connectSinaWeiboWithAppKey:@"1074777335"
+                               appSecret:@"64ed752fb0e50e05be1db46e5010f92f"
+                             redirectUri:@"https://api.weibo.com/oauth2/default.html"];
+    //当使用新浪微博客户端分享的时候需要按照下面的方法来初始化新浪的平台
+    [ShareSDK  connectSinaWeiboWithAppKey:@"1074777335"
+                                appSecret:@"64ed752fb0e50e05be1db46e5010f92f"
+                              redirectUri:@"https://api.weibo.com/oauth2/default.html"
+                              weiboSDKCls:[WeiboSDK class]];
+    //连接短信
+    [ShareSDK connectSMS];
+    //连接复制
+    [ShareSDK connectCopy];
+}
+-(BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url
+{
+    return [ShareSDK handleOpenURL:url wxDelegate:self];
+    
+}
+//- (BOOL)application:(UIApplication *)application
+//            openURL:(NSURL *)url
+//  sourceApplication:(NSString *)sourceApplication
+//         annotation:(id)annotation
+//{
+//    return [ShareSDK handleOpenURL:url
+//                 sourceApplication:sourceApplication
+//                        annotation:annotation
+//                        wxDelegate:self];
+//}
+
+- (void)applicationWillResignActive:(UIApplication *)application {
+    // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
+    // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
+}
+
+- (void)applicationDidEnterBackground:(UIApplication *)application {
+    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
+    // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+}
+
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+    // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
+    
+}
+
+- (void)applicationDidBecomeActive:(UIApplication *)application {
+    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+}
+
+- (void)applicationWillTerminate:(UIApplication *)application {
+    // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+}
+
+@end

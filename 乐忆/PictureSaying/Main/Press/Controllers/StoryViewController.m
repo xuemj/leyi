@@ -1,0 +1,152 @@
+//
+//  StoryViewController.m
+//  UIDemo
+//
+//  Created by tutu on 14/12/10.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//  描述照片
+
+#import "StoryViewController.h"
+#import "AppDelegate.h"
+#define ios7 ([[UIDevice currentDevice].systemVersion floatValue] >= 7.0)
+@interface StoryViewController ()<UITextViewDelegate>
+@property(nonatomic,strong)UITextView *tv;
+@property(nonatomic,strong)UILabel *labeltext;
+@end
+
+@implementation StoryViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.title = @"描述照片";
+    if (ios7) {
+        self.automaticallyAdjustsScrollViewInsets = NO;
+    }
+    
+    self.view.backgroundColor = [UIColor colorWithRed:240/255.0 green: 240/255.0 blue:240/255.0 alpha:1];
+    
+    UIView *v = [[UIView alloc]initWithFrame:CGRectMake(0,KScreenHeight*0.05, KScreenWidth,KScreenHeight*0.3)];
+    v.backgroundColor = [UIColor whiteColor];
+    [self.view addSubview:v];
+    
+    self.tv = [[UITextView alloc]initWithFrame:CGRectMake(5, 10, KScreenWidth-30,v.height-10)];
+    [self.tv becomeFirstResponder];
+    self.tv.backgroundColor = [UIColor whiteColor];
+    self.tv.textColor = [UIColor colorWithRed:137/255.0 green:137/255.0 blue:137/255.0 alpha:1];
+    self.tv.textColor = [UIColor blackColor];
+
+    self.tv.selectedRange = NSMakeRange(0, 0);
+    self.tv.font = [UIFont systemFontOfSize:14.0];
+    self.tv.delegate = self;
+    [v addSubview:self.tv];
+    
+    self.labeltext = [[UILabel alloc]initWithFrame:CGRectMake(5,8, 200, 20)];
+    self.labeltext.font = [UIFont systemFontOfSize:14.0];
+    self.labeltext.text = @"对照片进行描述(140字以内).....";
+    self.labeltext.textColor = [UIColor colorWithRed:137/255.0 green:137/255.0 blue:137/255.0 alpha:1];
+    [self.tv addSubview:self.labeltext];
+    if (self.tvText.length>0) {
+        self.labeltext.hidden = YES;
+        self.tv.text = self.tvText;
+    }
+    
+    UIButton *rightBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    rightBtn.frame = CGRectMake(0,0,60, 44);
+    rightBtn.titleEdgeInsets = UIEdgeInsetsMake(0, 20, 0, 0);
+    [rightBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [rightBtn setTitle:@"完成" forState:UIControlStateNormal ];
+    [rightBtn addTarget:self action:@selector(click:) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:rightBtn];
+    
+}
+-(void)click:(UIButton*)sender
+{
+    if (self.tv.text.length>0) {
+        self.pictureDesc = self.tv.text;
+    }
+    if (self.pictureDesc.length>0&&self.pictureDesc!= nil) {
+        if (self.navigationController.viewControllers.count>2) {
+            [self.navigationController popViewControllerAnimated:YES];
+        }else if(self.navigationController.viewControllers.count == 2){
+            [self.navigationController popViewControllerAnimated:YES];
+            [[NSNotificationCenter defaultCenter]postNotificationName:@"back" object:nil];
+        }else{
+            [self dismissViewControllerAnimated:YES completion:^{
+                
+            }];
+        }
+    }else{
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"提示" message:@"请把信息填写完整" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+        [alert show];
+    }
+}
+
+-(void)backAction{
+    if (self.navigationController.viewControllers.count>2) {
+        [self.navigationController popViewControllerAnimated:YES];
+    }else if(self.navigationController.viewControllers.count == 2){
+        [self.navigationController popViewControllerAnimated:YES];
+        [[NSNotificationCenter defaultCenter]postNotificationName:@"back" object:nil];
+    }else{
+        [self dismissViewControllerAnimated:YES completion:^{
+            
+        }];
+    }
+}
+
+
+-(void)textViewDidChange:(UITextView *)textView
+{
+    self.labeltext.hidden = YES;
+}
+-(BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
+{
+    
+    if ([text isEqualToString:@"\n"]) {//检测到“完成”
+        [textView resignFirstResponder];//释放键盘
+        return NO;
+    }
+    if (self.tv.text.length==0){//textview长度为0
+        if ([text isEqualToString:@""]) {//判断是否为删除键
+            self.labeltext.hidden=NO;
+        }else{
+            self.labeltext.hidden=YES;
+        }
+    }else{//textview长度不为0
+        if (self.tv.text.length==1){//textview长度为1时候
+            if ([text isEqualToString:@""]) {//判断是否为删除键
+                self.labeltext.hidden=NO;
+            }else{//不是删除
+                self.labeltext.hidden=YES;
+            }
+        }else{//长度不为1时候
+            self.labeltext.hidden=YES;
+        }
+    }
+    NSString * toBeString = [textView.text stringByReplacingCharactersInRange:range withString:text]; //得到输入框的内容
+    if ([toBeString length] > 140) { //如果输入框内容大于20则弹出警告
+        textView.text = [toBeString substringToIndex:140];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"超过最大字数不能输入了" delegate:nil cancelButtonTitle:@"Ok" otherButtonTitles:nil, nil];
+        [alert show];
+        return NO;
+    }
+    return YES;
+}
+
+//-(BOOL)textViewShouldEndEditing:(UITextView *)textView{
+//    if (textView.text != nil && textView.text.length > 0) {
+//        _pictureDesc = textView.text;
+//    }
+//    return YES;
+//}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    if (self.isViewLoaded && !self.view.window)
+    {
+        self.view = nil;
+    }
+    
+}
+
+@end

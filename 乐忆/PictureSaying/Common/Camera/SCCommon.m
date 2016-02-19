@@ -1,0 +1,86 @@
+//
+//  SCCommon.m
+//  SCCaptureCameraDemo
+//
+//  Created by Aevitx on 14-1-19.
+//  Copyright (c) 2014年 Aevitx. All rights reserved.
+//
+
+#import "SCCommon.h"
+#import "SCDefines.h"
+#import <QuartzCore/QuartzCore.h>
+
+@implementation SCCommon
+
+
+/**
+ *  UIColor生成UIImage
+ *
+ *  @param color     生成的颜色
+ *  @param imageSize 生成的图片大小
+ *
+ *  @return 生成后的图片
+ */
++ (UIImage*)createImageWithColor:(UIColor*)color size:(CGSize)imageSize {
+    CGRect rect=CGRectMake(0.0f, 0.0f, imageSize.width, imageSize.height);
+    UIGraphicsBeginImageContext(rect.size);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSetFillColorWithColor(context, [color CGColor]);
+    CGContextFillRect(context, rect);
+    
+    UIImage *theImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return theImage;
+}
+
+//画一条线
++ (void)drawALineWithFrame:(CGRect)frame andColor:(UIColor*)color inLayer:(CALayer*)parentLayer {
+    CALayer *layer = [CALayer layer];
+    layer.frame = frame;
+    layer.backgroundColor = color.CGColor;
+    [parentLayer addSublayer:layer];
+}
+
+#pragma mark -------------save image to local---------------
+//保存照片至本机
++ (void)saveImageToPhotoAlbum:(UIImage*)image {
+//    UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
+
+    NSString *savename = @"Documents/tempImage.jpg";
+    
+    //Create paths to output images
+    NSString  *jpgPath = [NSHomeDirectory() stringByAppendingPathComponent:savename];
+    
+    //Write image to jpg
+    [UIImageJPEGRepresentation(image, 0.5) writeToFile:jpgPath atomically:YES];
+    
+}
+
++ (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo:(void *)contextInfo {
+    if (error != NULL) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"出错了!" message:@"存不了T_T" delegate:self cancelButtonTitle:@"Ok" otherButtonTitles:nil, nil];
+        [alert show];
+    } else {
+        SCDLog(@"保存成功");
+    }
+}
+
+-(NSString *)getImageSavePath{
+    //获取存放的照片
+    //获取Documents文件夹目录
+    NSArray *path = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentPath = [path objectAtIndex:0];
+    //指定新建文件夹路径
+    NSString *imageDocPath = [documentPath stringByAppendingPathComponent:@"Leyi"];
+    return imageDocPath;
+}
+
+
+-(void)initData{
+    //指定新建文件夹路径
+    NSString *imageDocPath = [self getImageSavePath];
+    //创建ImageFile文件夹
+    [[NSFileManager defaultManager] createDirectoryAtPath:imageDocPath withIntermediateDirectories:YES attributes:nil error:nil];
+}
+
+@end

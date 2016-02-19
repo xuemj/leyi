@@ -1,0 +1,30 @@
+//
+//  CameraViewController.h
+//  PictureSaying
+//
+//  Created by tutu on 14/12/30.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "SCCaptureSessionManager.h"
+#import "V8HorizontalPickerView.h"
+#import "BaseViewController.h"
+
+@interface CameraViewController : BaseViewController<V8HorizontalPickerViewDelegate, V8HorizontalPickerViewDataSource>
+{
+    NSMutableArray *albumName;
+    NSMutableArray *titleArray;
+    int indexCount;
+    V8HorizontalPickerView *pickerView;
+    SCCaptureSessionManager *manager;
+}
+
+@property (nonatomic, retain) UIButton *nextButton;
+@property (nonatomic, retain) UIButton *reloadButton;
+@property (nonatomic, retain) UILabel *infoLabel;
+@property (nonatomic, assign) CGRect previewRect;
+@property (nonatomic, assign) BOOL isStatusBarHiddenBeforeShowCamera;
+
+
+@end

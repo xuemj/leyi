@@ -1,0 +1,197 @@
+//
+//  IndexTableView.m
+//  PictureSaying
+//
+//  Created by tutu on 14/12/8.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "IndexTableView.h"
+#import "IndexTableViewCell.h"
+#import "CreateViewController.h"
+#import "StoryDetailViewController.h"
+#import "DebugViewController.h"
+#import "DebugBigViewController.h"
+#import "CreateStoryViewController.h"
+
+@implementation IndexTableView
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+        self.dataSource = self;
+        self.delegate = self;
+        statusArray = [NSMutableArray array];
+        statusDic = [NSMutableDictionary dictionary];
+//        UIImageView *bgView= [[UIImageView alloc] initWithFrame:self.bounds];
+//        bgView.image = [UIImage imageNamed:@"bgimage3.jpg"];
+//        self.backgroundView = bgView;
+    }
+    return self;
+}
+
+-(void)awakeFromNib{
+    [super awakeFromNib];
+    self.dataSource = self;
+    self.delegate = self;
+    statusArray = [NSMutableArray array];
+    statusDic = [NSMutableDictionary dictionary];
+}
+
+-(void)layoutSubviews{
+    [super layoutSubviews];
+    if (self.tag == 100||self.tag == 101) {
+        _refreshHeaderView.hidden = YES;
+        _refreshHeaderView = nil;
+    }
+}
+
+#pragma mark - UITableViewDataSource
+-(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    if (tableView.tag == 100) {
+        return self.indexData.count+1;
+    }else{
+        return self.indexData.count;
+    }
+}
+
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    if (indexPath.row < self.indexData.count) {
+        static NSString *identifier = @"indexCell";
+        IndexTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier];
+        if (cell == nil) {
+            cell = [[[NSBundle mainBundle]loadNibNamed:@"IndexTableViewCell" owner:self options:nil] lastObject];
+            //        cell = [[IndexTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
+//            cell.backgroundColor = rgb(218, 218, 218, 1);
+            cell.backgroundColor = [UIColor clearColor];
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        }
+        IndexModel *model = self.indexData[indexPath.row];
+        NSLog(@"self.indexData = %d",self.indexData.count);
+        model.isOdd = [NSString stringWithFormat:@"%d",indexPath.row%2];
+        if (tableView.tag == 100) {
+            cell.isMine = 1;
+            cell.row = [NSNumber numberWithInteger:indexPath.row];
+        }
+        cell.model = self.indexData[indexPath.row];
+        return cell;
+    }else{
+        NSLog(@"index.row = %d",indexPath.row);
+        UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+        UIView *bgView = [[UIView alloc] initWithFrame:CGRectMake(10, 5, KScreenWidth-20, (KScreenHeight-64)/3-10)];
+        bgView.backgroundColor = [UIColor whiteColor];
+        [cell.contentView addSubview:bgView];
+        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(5, (bgView.height-50)/2, (bgView.width-15)/2, 50)];
+        label.textAlignment = 1;
+        label.textColor = [UIColor colorWithRed:241/255.0 green:184/255.0 blue:15/255.0 alpha:1];
+        label.font = [UIFont systemFontOfSize:30.0];
+        label.text = @"创建故事";
+        [bgView addSubview:label];
+        UIView *grayView = [[UIView alloc] initWithFrame:CGRectMake(label.right+5, 5, (bgView.width-15)/2, bgView.height-10)];
+        grayView.backgroundColor = [UIColor colorWithRed:240/255.0 green:240/255.0 blue:240/255.0 alpha:1];
+        [bgView addSubview:grayView];
+        
+        UIButton *createButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        createButton.frame = CGRectMake((grayView.width-100)/2, (grayView.height-100)/2, 100, 100);
+        [createButton setImage:[UIImage imageNamed:@"加号IOS"] forState:UIControlStateNormal];
+        [createButton addTarget:self action:@selector(createAction:) forControlEvents:UIControlEventTouchUpInside];
+        [grayView addSubview:createButton];
+//        cell.backgroundColor = rgb(218, 218, 218, 1);
+        cell.backgroundColor = rgb(218, 218, 218, 0);
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        return cell;
+    }
+}
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (tableView.tag == 100) {
+        if (indexPath.row == self.indexData.count) {
+            return;
+        }
+    }
+    if (tableView.tag == 100) {
+        StoryDetailViewController *storyDetailVC = [[StoryDetailViewController alloc] init];
+        storyDetailVC.model = self.indexData[indexPath.row];
+        storyDetailVC.writable = @"yes";
+        [self.viewController.navigationController pushViewController:storyDetailVC animated:YES];
+        [[NSNotificationCenter defaultCenter]postNotificationName:@"push" object:nil];
+    }else{
+        IndexModel *model = self.indexData[indexPath.row];
+        if ([model.templateId isEqualToString:@"2"]) {
+            DebugBigViewController *debugBigVC = [[DebugBigViewController alloc] init];
+            debugBigVC.model = self.indexData[indexPath.row];
+            [self.viewController.navigationController pushViewController:debugBigVC animated:YES];
+            [[NSNotificationCenter defaultCenter]postNotificationName:@"push" object:nil];
+        }else{
+            DebugViewController *debugVC = [[DebugViewController alloc] init];
+            [self.viewController.navigationController pushViewController:debugVC animated:YES];
+            debugVC.model = self.indexData[indexPath.row];
+            [[NSNotificationCenter defaultCenter]postNotificationName:@"push" object:nil];
+        }
+    }
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    return 158;
+}
+
+#pragma mark - UITableView Delegate
+///*------------------------删除cell的代理方法---------------------------*/
+////要求委托方的编辑风格在表视图的一个特定的位置。
+//-(UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath{
+//    UITableViewCellEditingStyle result = UITableViewCellEditingStyleNone;//默认没有编辑风格
+//    if (tableView.tag == 100) {
+//        if ([tableView isEqual:self]) {
+//            result = UITableViewCellEditingStyleDelete;//设置编辑风格为删除风格
+//        }
+//    }
+//    return result;
+//}
+//
+//-(void)setEditing:(BOOL)editing animated:(BOOL)animated{
+//    //设置是否显示一个可编辑视图的视图控制器。
+//    [super setEditing:editing animated:animated];
+//    if (self.tag == 100) {
+//        [self setEditing:editing animated:animated];
+//    }
+//    //切换接收者的进入和退出编辑模式。
+//}
+//
+//-(void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath{
+//    if (self.tag == 100) {
+//        //请求数据源提交的插入或删除指定行接收者。
+//        if (editingStyle ==UITableViewCellEditingStyleDelete) {
+//            //如果编辑样式为删除样式
+//            if (indexPath.row<[self.data count]) {
+//                [self.data removeObjectAtIndex:indexPath.row];
+//                //移除数据源的数据
+//                [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationLeft];
+//                //移除tableView中的数据
+//                [tableView reloadData];
+//            }
+//        }
+//    }
+//}
+//
+//-(NSString *)tableView:(UITableView *)tableView titleForDeleteConfirmationButtonForRowAtIndexPath:(NSIndexPath *)indexPath{
+//    return @"             删除";
+//}
+
+-(void)createAction:(UIButton *)btn{
+    NSLog(@"createcreatecreatecreate");
+    CreateStoryViewController *cvc = [[CreateStoryViewController alloc]init];
+    [self.viewController.navigationController pushViewController:cvc animated:YES];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"push" object:nil];
+}
+
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect {
+    // Drawing code
+}
+*/
+
+@end

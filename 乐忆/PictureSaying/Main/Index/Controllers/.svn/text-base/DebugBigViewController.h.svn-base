@@ -1,0 +1,26 @@
+//
+//  DebugBigViewController.h
+//  PictureSaying
+//
+//  Created by tutu on 14/12/19.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "BaseViewController.h"
+#import "StoryBigTableView.h"
+#import "IndexModel.h"
+#import "EventModel.h"
+#import "CommentViewController.h"
+
+@interface DebugBigViewController : BaseViewController<CommentViewControllerDelegate>
+{
+    StoryBigTableView *_scrollView;
+    UILabel *tipNullLabel;
+
+}
+
+@property(nonatomic, retain)NSMutableArray *Data;
+@property(nonatomic, retain)NSString *isUser;
+@property(nonatomic, retain)MainModel *model;
+@property(nonatomic, retain)EventModel *eModel;
+@end

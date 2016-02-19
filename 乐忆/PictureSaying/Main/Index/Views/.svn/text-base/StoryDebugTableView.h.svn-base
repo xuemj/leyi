@@ -1,0 +1,35 @@
+//
+//  StoryDebugTableView.h
+//  PictureSaying
+//
+//  Created by tutu on 14/12/19.
+//  Copyright (c) 2014年 tutu. All rights reserved.
+//
+
+#import "BaseTableView.h"
+#import "IndexModel.h"
+
+@interface StoryDebugTableView : BaseTableView
+<UITableViewDataSource,UITableViewDelegate>
+{
+    UIView *tableHeaderView;
+    UIImageView *titleImageView;
+    
+    UILabel *titleLabel;
+    
+    UIButton *zanBuuton;
+    
+    UILabel *zanCount;
+    
+    UIButton *commentBuuton;
+    
+    UILabel *commentCount;
+    
+    UIButton *shareBuuton;
+    
+    UILabel *dateLabel;
+    UILabel *contentLabel;
+    UILabel *line;
+}
+@property(nonatomic, retain)IndexModel *model;
+@end
